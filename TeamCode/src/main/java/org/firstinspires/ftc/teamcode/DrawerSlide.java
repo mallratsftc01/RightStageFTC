@@ -79,6 +79,11 @@ public class DrawerSlide {
         pow *= (pow < 0.1) ? 0 : 1;
         return pow;
     }
+    /**Will convert inches into encoder ticks and use targetExtendDist to convert that int into a power.*/
+    public double targetExtendInch(double target) {
+        int posTarget = (int)(target / wormBaseRotPerTick / wormGearRatio / wormCirc);
+        return targetExtendDist(posTarget);
+    }
 
     /**Will set the shoulder motor's power to the input.*/
     public void moveShoulder(double pow) {shoulder.setPower(pow);}
