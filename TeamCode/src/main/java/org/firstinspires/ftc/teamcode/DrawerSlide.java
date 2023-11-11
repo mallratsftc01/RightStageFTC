@@ -5,9 +5,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 public class DrawerSlide {
-    final double wormCirc = 0.254 * 3.14;
-    final double wormGearRatio = 1 / 60.0;
-    final double wormBaseRotPerTick = 1/28.0;
+    final double WORM_CIRC = 0.254 * 3.14;
+    final double WORM_GEAR_RATIO = 72.0 / 60.0 / 28.0;
+    final double SHOULDER_GEAR_RATIO = 1.0/28.0;
+    final double SHOULDER_HIGHT = 11.0;
+    final double ARM_LENGTH = 17.5;
     DcMotorEx shoulder;
     DcMotorEx extend;
     Servo wrist;
@@ -37,7 +39,13 @@ public class DrawerSlide {
     public int getExtendDist() {return extend.getCurrentPosition() - extendStart;}
 
     /**Returns the inches extended by the extend motor.*/
-    public double getExtendInch() {return Math.abs(getExtendDist() * wormBaseRotPerTick * wormGearRatio * wormCirc);}
+    public double getExtendInch() {return Math.abs(getExtendDist() * WORM_GEAR_RATIO * WORM_CIRC);}
+
+    /**Returns the height of the end of the arm in inches from the ground.*/
+    public double getClawHeightInch() {
+        double angle = (getShoulderDist() * SHOULDER_GEAR_RATIO * 360) - 30;
+        return ((getExtendInch() + ARM_LENGTH) / Math.sin(angle)) + SHOULDER_HIGHT;
+    }
 
     /**Returns the current position of the wrist servo.*/
     public double getWristPos() {return wrist.getPosition();}
@@ -81,7 +89,7 @@ public class DrawerSlide {
     }
     /**Will convert inches into encoder ticks and use targetExtendDist to convert that int into a power.*/
     public double targetExtendInch(double target) {
-        int posTarget = (int)(target / wormBaseRotPerTick / wormGearRatio / wormCirc);
+        int posTarget = (int)(target / WORM_GEAR_RATIO / WORM_CIRC);
         return targetExtendDist(posTarget);
     }
 
