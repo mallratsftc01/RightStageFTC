@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -50,7 +51,8 @@ public class RightStage extends LinearOpMode {
 
     private TouchSensor magnet;
 
-    private BNO055IMU emu;
+    private BNO055IMU emu1;
+    private BNO055IMU emu2;
     private LocationServices gps;
 
     @Override
@@ -86,12 +88,19 @@ public class RightStage extends LinearOpMode {
         parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample OpMode
         parameters.loggingEnabled      = true;
         parameters.loggingTag          = "IMU";
+        /* new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
+
+        )*/
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
-        emu = hardwareMap.get(BNO055IMU.class, "imu 1");
-        emu.initialize(parameters);
+        emu1 = hardwareMap.get(BNO055IMU.class, "imu 1");
+        emu2 = hardwareMap.get(BNO055IMU.class, "imu 2");
+        emu1.initialize(parameters);
+        emu2.initialize(parameters);
 
-        gps = new LocationServices(0, 0, northEastMotor, northWestMotor, southEastMotor, southWestMotor, 0.9f, 0.7f, controller1, cam, 12.57f, emu);
+        gps = new LocationServices(0, 0, northEastMotor, northWestMotor, southEastMotor, southWestMotor, 0.9f, 0.7f, controller1, cam, 12.57f, emu1);
         telemetry.addData("label: ", cam.getLabel(0));
         telemetry.addData("Num Recogs: ", cam.numRecognitions());
         telemetry.addData("ID: ", cam.getID(0));
@@ -139,7 +148,10 @@ public class RightStage extends LinearOpMode {
             else if (controller1.buttonCase(Controller.UP)) {myDrive.setDrivePower(0, -0.5f * slow, 0, 0);}
             else if (controller1.buttonCase(Controller.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
-            else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
+            else {
+                if (controller1.buttonToggleSingle(Controller.A)) {myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu1, emu2);}
+                else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
+            }
         }
     }
 

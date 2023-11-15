@@ -45,6 +45,8 @@ public class DriveTrain {
     private double leftPowerB = 0.0;
     private double rightPowerB = 0.0;
 
+    private double targetDegrees = 0.0;
+
     private double rotationsSaved = 0.0;
     private boolean driving = false;
 
@@ -168,6 +170,55 @@ public class DriveTrain {
         }
         setMotorPowers();
     }
+
+    public void setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, BNO055IMU imu1, BNO055IMU imu2) {
+        if (driveType == 0) {
+            // Tank Drive
+            rightPower = powerRightY;
+            leftPower = powerLeftY;
+        } else if (driveType == 1) {
+            //Arcade Drive
+            rightPower = powerLeftY + powerLeftX;
+            leftPower = powerLeftY - powerLeftX;
+            leftPower = (powerLeftY > -0.5 && powerLeftY < 0.5) ? 0 : leftPower;
+            rightPower = (powerLeftX > -0.1 && powerLeftX < 0.1) ? leftPower : rightPower;
+        } else if (driveType == -1) {
+            // ZK - 2/12/2022 - Zacharian Hybrid Drive (Weird)
+            rightPower = powerRightY + powerRightX;
+            leftPower = powerLeftY - powerLeftX;
+        } else if (driveType == 2) {
+            // LB - 9/17/2022 - X-Drive
+            double powerVar = 0.25;
+            frontPower = powerLeftX + (powerRightX*powerVar);
+            rightPower = powerLeftY + (powerRightX*powerVar);
+            backPower = powerLeftX - (powerRightX*powerVar);
+            leftPower = powerLeftY - (powerRightX*powerVar);
+        } else if (driveType == 3) {
+            // left stick moves the robot, right stick rotates the robot
+            //ZK - 11/14/2023 - Gyro Mediated Mecanum Drive
+            float rPow = 0;
+            if (Math.abs(powerRightX) > 0.8 || Math.abs(powerRightY) > 0.8) {
+                targetDegrees = Math.toDegrees(Math.atan(powerRightX / powerRightY));
+                double avgCurrentDegrees = (imu1.getAngularOrientation().thirdAngle + imu2.getAngularOrientation().thirdAngle) / 2;
+                rPow = (avgCurrentDegrees - 5 > targetDegrees || avgCurrentDegrees + 5 < targetDegrees) ? (float) (targetDegrees - avgCurrentDegrees) : 0.0f;
+                rPow /= 30;
+                rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
+            }
+            //double leftX = powerLeftX * 1.1;
+            double denominator = Math.max(Math.abs(powerLeftY) + Math.abs(powerLeftX) + Math.abs(rPow), 1);
+            rightPowerF = ((-1 * powerLeftY + rPow - powerLeftX) / denominator) * 0.8;
+            leftPowerF = ((-1 * powerLeftY + rPow + powerLeftX) / denominator) * 0.8;
+            rightPowerB = ((-1 * powerLeftY - rPow - powerLeftX) / denominator) * 1;
+            leftPowerB = ((-1 * powerLeftY - rPow + powerLeftX) / denominator) * 1;
+
+        } else {
+            //Default to Tank Drive
+            rightPower = powerRightY;
+            leftPower = powerLeftY;
+        }
+        setMotorPowers();
+    }
+
     //rotates to a position based on an imported IMU
     //subject to tweaking
     public boolean rotateOnIMU (@NonNull BNO055IMU imuIn, float target) {
