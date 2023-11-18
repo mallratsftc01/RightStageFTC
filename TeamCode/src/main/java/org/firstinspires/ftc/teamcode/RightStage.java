@@ -28,6 +28,7 @@ import android.os.Environment;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -119,12 +120,12 @@ public class RightStage extends LinearOpMode {
             //telemetry.addData("left_stick_x:", controller1.left_stick_x_deadband());
             //.addData("Name: ", maggie.getName(0));
             //controller1.updateJoysticks();
-            telemetry.addData("X:", gps.getX());
+            /*telemetry.addData("X:", gps.getX());
             telemetry.addData("Y:", gps.getY());
             telemetry.addData("Arm Pos:", rightLift.getCurrentPosition());
             telemetry.addData("a state", controller2.boolToInt(controller2.buttonToggleSingle(Controller.A)));
             telemetry.addData("claw pos", claw.getPosition());
-            telemetry.update();
+            telemetry.update();*/
             //rightLift.setPower(((magnet.isPressed()) ? -0.5 : 1) * controller2.left_stick_y());
             rightLift.setPower(controller2.left_stick_y_deadband() * 0.6);
             claw.setPosition((controller2.buttonToggleSingle(Controller.A)) ? 0.75 : 1.0);
@@ -150,7 +151,9 @@ public class RightStage extends LinearOpMode {
             else if (controller1.buttonCase(Controller.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
             else {
-                if (controller1.buttonToggleSingle(Controller.A)) {myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu1, emu2);}
+                if (controller1.buttonToggleSingle(Controller.A)) {telemetry.addData("Target Degrees", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu1, emu2));
+                    telemetry.addData("avgCurrentAngle:", (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2);
+                telemetry.update();}
                 else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
             }
         }

@@ -1,6 +1,7 @@
 package com.epra;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.linearOpMode;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
 import androidx.annotation.NonNull;
 
@@ -174,7 +175,8 @@ public class DriveTrain {
         setMotorPowers();
     }
 
-    public void setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMU imu1, IMU imu2) {
+    public double setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMU imu1, IMU imu2) {
+        double re = 0.0;
         if (driveType == 0) {
             // Tank Drive
             rightPower = powerRightY;
@@ -199,14 +201,13 @@ public class DriveTrain {
         } else if (driveType == 3) {
             // left stick moves the robot, right stick rotates the robot
             //ZK - 11/14/2023 - Gyro Mediated Mecanum Drive
-            float rPow = 0;
-            if (Math.abs(powerRightX) > 0.8 || Math.abs(powerRightY) > 0.8) {
-                targetDegrees = Math.toDegrees(Math.atan(powerRightX / powerRightY));
-                double avgCurrentDegrees = (imu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + imu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2;
-                rPow = (avgCurrentDegrees - 5 > targetDegrees || avgCurrentDegrees + 5 < targetDegrees) ? (float) (targetDegrees - avgCurrentDegrees) : 0.0f;
-                rPow /= 30;
-                rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
-            }
+            targetDegrees += powerRightX * 0.9;
+            targetDegrees %= 360;
+            re = targetDegrees;
+            double avgCurrentDegrees = ((imu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + imu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2) + 180;
+            float rPow = (avgCurrentDegrees - 20 > targetDegrees || avgCurrentDegrees + 20 < targetDegrees) ? (float) (targetDegrees - avgCurrentDegrees) : 0.0f;
+            rPow /= 240;
+            rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
             //double leftX = powerLeftX * 1.1;
             double denominator = Math.max(Math.abs(powerLeftY) + Math.abs(powerLeftX) + Math.abs(rPow), 1);
             rightPowerF = ((-1 * powerLeftY + rPow - powerLeftX) / denominator) * 0.8;
@@ -220,6 +221,7 @@ public class DriveTrain {
             leftPower = powerLeftY;
         }
         setMotorPowers();
+        return re;
     }
 
     //rotates to a position based on an imported IMU
