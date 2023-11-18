@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.epra.*;
@@ -51,8 +52,8 @@ public class RightStage extends LinearOpMode {
 
     private TouchSensor magnet;
 
-    private BNO055IMU emu1;
-    private BNO055IMU emu2;
+    private IMU emu1;
+    private IMU emu2;
     private LocationServices gps;
 
     @Override
@@ -88,17 +89,17 @@ public class RightStage extends LinearOpMode {
         parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample OpMode
         parameters.loggingEnabled      = true;
         parameters.loggingTag          = "IMU";
-        /* new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
-
-        )*/
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
-        emu1 = hardwareMap.get(BNO055IMU.class, "imu 1");
-        emu2 = hardwareMap.get(BNO055IMU.class, "imu 2");
-        emu1.initialize(parameters);
-        emu2.initialize(parameters);
+//        boolean initialize = IMU.initialize(parameters);
+        IMU.Parameters perry = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+
+        emu1 = hardwareMap.get(IMU.class, "imu 1");
+        emu2 = hardwareMap.get(IMU.class, "imu 2");
+        emu1.initialize(perry);
+        emu2.initialize(perry);
 
         gps = new LocationServices(0, 0, northEastMotor, northWestMotor, southEastMotor, southWestMotor, 0.9f, 0.7f, controller1, cam, 12.57f, emu1);
         telemetry.addData("label: ", cam.getLabel(0));

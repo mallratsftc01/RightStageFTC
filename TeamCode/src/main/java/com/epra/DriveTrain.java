@@ -4,10 +4,13 @@ import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.lin
 
 import androidx.annotation.NonNull;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.IMU;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -171,7 +174,7 @@ public class DriveTrain {
         setMotorPowers();
     }
 
-    public void setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, BNO055IMU imu1, BNO055IMU imu2) {
+    public void setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMU imu1, IMU imu2) {
         if (driveType == 0) {
             // Tank Drive
             rightPower = powerRightY;
@@ -199,7 +202,7 @@ public class DriveTrain {
             float rPow = 0;
             if (Math.abs(powerRightX) > 0.8 || Math.abs(powerRightY) > 0.8) {
                 targetDegrees = Math.toDegrees(Math.atan(powerRightX / powerRightY));
-                double avgCurrentDegrees = (imu1.getAngularOrientation().thirdAngle + imu2.getAngularOrientation().thirdAngle) / 2;
+                double avgCurrentDegrees = (imu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + imu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2;
                 rPow = (avgCurrentDegrees - 5 > targetDegrees || avgCurrentDegrees + 5 < targetDegrees) ? (float) (targetDegrees - avgCurrentDegrees) : 0.0f;
                 rPow /= 30;
                 rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;

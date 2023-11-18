@@ -4,8 +4,9 @@ package com.epra;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.CameraPlus;
 
 public class LocationServices {
@@ -35,11 +36,11 @@ public class LocationServices {
     private Controller controller1;
     private CameraPlus cam;
     float wheelCirc;
-    BNO055IMU imu;
+    IMU imu;
     private float saveX;
     private float saveY;
 
-    public LocationServices(float xStart, float yStart, DcMotorEx motor0In, DcMotorEx motor1In, DcMotorEx motor2In, DcMotorEx motor3In, float yRetentionIn, float xRetentionIn, Controller controllerIn, CameraPlus camIn, float wheelCircIn, BNO055IMU imuIn) {
+    public LocationServices(float xStart, float yStart, DcMotorEx motor0In, DcMotorEx motor1In, DcMotorEx motor2In, DcMotorEx motor3In, float yRetentionIn, float xRetentionIn, Controller controllerIn, CameraPlus camIn, float wheelCircIn, IMU imuIn) {
         x = xStart;
         y = yStart;
         saveX = 0;
@@ -77,7 +78,7 @@ public class LocationServices {
     public float movementYRobotRelative() {return (distTraveledMotor0() + distTraveledMotor1() + distTraveledMotor2() + distTraveledMotor3() / 4.0f) * wheelCirc * yRetention * controller1.left_stick_y;}
 
     public void updatePositionWithMotors() {
-        double rot = imu.getAngularOrientation().thirdAngle % 90;
+        double rot = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) % 90;
         x += Math.sin(rot) * movementYRobotRelative();
         y += Math.cos(rot) * movementYRobotRelative();
         x += Math.cos(rot) * movementXRobotRelative();
@@ -122,7 +123,7 @@ public class LocationServices {
                 break;
         }
         double hyp = Math.sqrt((cam.getX(0) * cam.getX(0)) + (cam.getY(0) * cam.getY(0)));
-        double rot = (imu.getAngularOrientation().thirdAngle % 90) - cam.getYaw(0);
+        double rot = (imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) % 90) - cam.getYaw(0);
         tempY += (float)(((tempY > 0) ? -1 : 1) * Math.abs(Math.cos(rot) * hyp));
         tempX += (float)(Math.signum(cam.getX(0)) * ((cam.getID(0) < 7) ? -1 : 1) * Math.abs(Math.sin(rot) * hyp));
         if (tempX != saveX && tempY != saveY) {
