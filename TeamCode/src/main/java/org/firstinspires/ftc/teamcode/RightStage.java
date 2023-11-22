@@ -55,6 +55,7 @@ public class RightStage extends LinearOpMode {
 
     private IMU emu1;
     private IMU emu2;
+    private IMUExpanded emu;
     private LocationServices gps;
 
     @Override
@@ -101,7 +102,9 @@ public class RightStage extends LinearOpMode {
         emu1.initialize(perry);
         emu2.initialize(perry);
 
-        DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2 + 180);
+        emu = new IMUExpanded(emu1, emu2);
+
+                DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
 
         gps = new LocationServices(0, 0, northEastMotor, northWestMotor, southEastMotor, southWestMotor, 0.9f, 0.7f, controller1, cam, 12.57f, emu1);
         telemetry.addData("label: ", cam.getLabel(0));

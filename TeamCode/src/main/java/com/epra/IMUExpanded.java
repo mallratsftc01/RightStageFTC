@@ -5,9 +5,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import java.util.ArrayList;
 
 public class IMUExpanded {
-    public final int YAW = 0;
-    public final int PITCH = 1;
-    public final int ROLL = 2;
+    static public final int YAW = 0;
+    static public final int PITCH = 1;
+    static public final int ROLL = 2;
     ArrayList<IMU> imus = new ArrayList<IMU>();
     public IMUExpanded(IMU imu) {
         imus.add(imu);

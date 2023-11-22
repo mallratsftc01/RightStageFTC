@@ -176,7 +176,7 @@ public class DriveTrain {
         setMotorPowers();
     }
 
-    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMU imu1, IMU imu2) {
+    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMUExpanded imu) {
         String re = "";
         if (driveType == 0) {
             // Tank Drive
@@ -201,13 +201,12 @@ public class DriveTrain {
             leftPower = powerLeftY - (powerRightX*powerVar);
         } else if (driveType == 3) {
             // left stick moves the robot, right stick rotates the robot
-            //ZK - 11/14/2023 - Gyro Mediated Mecanum Drive
+            //ZK - 11/22/2023 - Gyro Mediated Mecanum Drive
             targetDegrees += powerRightX * 0.9;
             targetDegrees %= 360;
             re = targetDegrees.toString();
-            double avgCurrentDegrees = ((imu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + imu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2) + 180;
-            float rPow = (Math.abs(avgCurrentDegrees - targetDegrees) > 5) ? (float) (targetDegrees - avgCurrentDegrees) : 0.0f;
-            //rPow = (Math.abs(avgCurrentDegrees - targetDegrees) < 355) ? (float) (targetDegrees - avgCurrentDegrees) : rPow;
+            double avgCurrentDegrees = imu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180;
+            float rPow = (Math.abs(imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees - 180)) > 5) ? (float) (imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees - 180)) : 0.0f;
             re = re + "," + rPow;
             rPow /= 90;
             rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
