@@ -66,7 +66,6 @@ public class RightStage extends LinearOpMode {
         //southWestMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         northWestMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         northEastMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3);
 
         rightLift = hardwareMap.get(DcMotorEx.class, "rightArm");
         leftLift = hardwareMap.get(DcMotorEx.class, "leftArm");
@@ -101,6 +100,8 @@ public class RightStage extends LinearOpMode {
         emu2 = hardwareMap.get(IMU.class, "imu 2");
         emu1.initialize(perry);
         emu2.initialize(perry);
+
+        DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2 + 180);
 
         gps = new LocationServices(0, 0, northEastMotor, northWestMotor, southEastMotor, southWestMotor, 0.9f, 0.7f, controller1, cam, 12.57f, emu1);
         telemetry.addData("label: ", cam.getLabel(0));
@@ -151,11 +152,12 @@ public class RightStage extends LinearOpMode {
             else if (controller1.buttonCase(Controller.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
             else {
-                if (controller1.buttonToggleSingle(Controller.A)) {telemetry.addData("Target Degrees", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu1, emu2));
-                    telemetry.addData("avgCurrentAngle:", (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2);
-                telemetry.update();}
+                if (controller1.buttonToggleSingle(Controller.A)) {telemetry.addData("Target Degrees, degree distance, rPow, ", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu1, emu2));
+                    telemetry.addData("avgCurrentAngle:", (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2 + 180);}
                 else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
             }
+            telemetry.addData("2nd mode active:", controller1.buttonToggleSingle(Controller.A));
+            telemetry.update();
         }
     }
 

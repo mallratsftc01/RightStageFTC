@@ -60,7 +60,7 @@ public class TempTimeAutoBlueNear extends LinearOpMode {
         southWestMotor = hardwareMap.get(DcMotorEx.class, "southwestMotor");
         northWestMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         northEastMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3);
+        DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, 0);
 
         rightLift = hardwareMap.get(DcMotorEx.class, "rightArm");
         leftLift = hardwareMap.get(DcMotorEx.class, "leftArm");

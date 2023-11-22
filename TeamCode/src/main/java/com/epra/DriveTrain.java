@@ -49,7 +49,7 @@ public class DriveTrain {
     private double leftPowerB = 0.0;
     private double rightPowerB = 0.0;
 
-    private double targetDegrees = 0.0;
+    private Double targetDegrees = 0.0;
 
     private double rotationsSaved = 0.0;
     private boolean driving = false;
@@ -111,7 +111,7 @@ public class DriveTrain {
         elapsedDistanceNS = 0.0;
     }
             // added for x drive
-    public DriveTrain (DcMotor motor1, DcMotor motor2, DcMotor motor3, DcMotor motor4, int driveTypeIn) {
+    public DriveTrain (DcMotor motor1, DcMotor motor2, DcMotor motor3, DcMotor motor4, int driveTypeIn, double target) {
         driveType = driveTypeIn;
         if (driveType == 2) {
             rightMotor = new DcMotorEx[1];
@@ -133,6 +133,7 @@ public class DriveTrain {
             distanceSavedNWSE = 0.0;
             distanceNowNESW = 0.0;
             elapsedDistanceNWSE = 0.0;
+            targetDegrees = target;
         }
     }
             // method to drive the robot
@@ -175,8 +176,8 @@ public class DriveTrain {
         setMotorPowers();
     }
 
-    public double setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMU imu1, IMU imu2) {
-        double re = 0.0;
+    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMU imu1, IMU imu2) {
+        String re = "";
         if (driveType == 0) {
             // Tank Drive
             rightPower = powerRightY;
@@ -203,11 +204,14 @@ public class DriveTrain {
             //ZK - 11/14/2023 - Gyro Mediated Mecanum Drive
             targetDegrees += powerRightX * 0.9;
             targetDegrees %= 360;
-            re = targetDegrees;
+            re = targetDegrees.toString();
             double avgCurrentDegrees = ((imu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + imu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2) + 180;
-            float rPow = (avgCurrentDegrees - 20 > targetDegrees || avgCurrentDegrees + 20 < targetDegrees) ? (float) (targetDegrees - avgCurrentDegrees) : 0.0f;
-            rPow /= 240;
+            float rPow = (Math.abs(avgCurrentDegrees - targetDegrees) > 5) ? (float) (targetDegrees - avgCurrentDegrees) : 0.0f;
+            //rPow = (Math.abs(avgCurrentDegrees - targetDegrees) < 355) ? (float) (targetDegrees - avgCurrentDegrees) : rPow;
+            re = re + "," + rPow;
+            rPow /= 90;
             rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
+            re = re + "," + rPow;
             //double leftX = powerLeftX * 1.1;
             double denominator = Math.max(Math.abs(powerLeftY) + Math.abs(powerLeftX) + Math.abs(rPow), 1);
             rightPowerF = ((-1 * powerLeftY + rPow - powerLeftX) / denominator) * 0.8;
