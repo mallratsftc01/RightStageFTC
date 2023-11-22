@@ -155,7 +155,7 @@ public class RightStage extends LinearOpMode {
             else if (controller1.buttonCase(Controller.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
             else {
-                if (controller1.buttonToggleSingle(Controller.A)) {telemetry.addData("Target Degrees, degree distance, rPow, ", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu1, emu2));
+                if (controller1.buttonToggleSingle(Controller.A)) {telemetry.addData("Target Degrees, degree distance, rPow, ", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu));
                     telemetry.addData("avgCurrentAngle:", (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2 + 180);}
                 else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
             }
