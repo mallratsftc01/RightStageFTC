@@ -1,9 +1,7 @@
 package com.epra;
 
 import com.qualcomm.robotcore.hardware.IMU;
-
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-
 import java.util.ArrayList;
 
 public class IMUExpanded {
