@@ -4,20 +4,33 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import java.util.ArrayList;
 
-public class IMUExpanded {
+public class IMUExpanded{
     static public final int YAW = 0;
     static public final int PITCH = 1;
     static public final int ROLL = 2;
-    ArrayList<IMU> imus = new ArrayList<IMU>();
+    ArrayList<IMU> imus = new ArrayList<IMU>();\
+    /**Increases the functionality of the IMU class.
+     *<p></p>
+     *Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.
+     *<p></p>
+     *Expands the functionality of one IMU.*/
     public IMUExpanded(IMU imu) {
         imus.add(imu);
     }
-
+    /**Increases the functionality of the IMU class.
+     *<p></p>
+     *Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.
+     *<p></p>
+     *Expands the functionality of two IMUs.*/
     public IMUExpanded(IMU imu1, IMU imu2) {
         imus.add(imu1);
         imus.add(imu2);
     }
-
+    /**Increases the functionality of the IMU class.
+     *<p></p>
+     *Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.
+     *<p></p>
+     *Expands the functionality of one or more IMUs.*/
     public IMUExpanded(IMU[] imu) {
         for (IMU e : imu) {imus.add(e);}
     }
