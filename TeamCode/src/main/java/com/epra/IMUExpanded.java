@@ -57,9 +57,10 @@ public class IMUExpanded{
     public double distIMU(int axis, AngleUnit angleUnit, double target) {return target - avgIMU(axis, angleUnit);}
     /**Returns the true distance between the orientation of the IMU(s) and the target, including looping from 360 to 1.*/
     public double trueDistIMU(int axis, AngleUnit angleUnit, double target) {
-        double current = avgIMU(axis, angleUnit);
-        if (Math.min(target, current) == target) {target += 360;}
+        double current = avgIMU(axis, angleUnit) + 180;
+        double newTarget = target;
+        if (Math.min(target, current) == target) {newTarget += 360;}
         else {current += 360;}
-        return Math.min(distIMU(axis,angleUnit, target), (target - current));
+        return Math.min(distIMU(axis,angleUnit, target), (newTarget - current));
     }
 }

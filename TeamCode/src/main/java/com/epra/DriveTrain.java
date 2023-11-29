@@ -206,9 +206,9 @@ public class DriveTrain {
             targetDegrees %= 360;
             re = targetDegrees.toString();
             double avgCurrentDegrees = imu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180;
-            float rPow = (Math.abs(imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees - 180)) > 5) ? (float) (imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees - 180)) : 0.0f;
+            float rPow = (Math.abs(imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) > 5) ? (float) (imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) : 0.0f;
             re = re + "," + rPow;
-            rPow /= 90;
+            rPow /= 360;
             rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
             re = re + "," + rPow;
             //double leftX = powerLeftX * 1.1;
