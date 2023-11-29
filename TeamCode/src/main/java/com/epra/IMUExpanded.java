@@ -8,7 +8,7 @@ public class IMUExpanded{
     static public final int YAW = 0;
     static public final int PITCH = 1;
     static public final int ROLL = 2;
-    ArrayList<IMU> imus = new ArrayList<IMU>();\
+    ArrayList<IMU> imus = new ArrayList<IMU>();
     /**Increases the functionality of the IMU class.
      *<p></p>
      *Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.

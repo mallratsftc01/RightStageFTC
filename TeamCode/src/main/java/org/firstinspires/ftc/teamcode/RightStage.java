@@ -40,10 +40,11 @@ public class RightStage extends LinearOpMode {
     private DcMotorEx southEastMotor;
     private DcMotorEx southWestMotor;
     private DcMotorEx northWestMotor;
-    private DcMotorEx rightLift;
-    private DcMotorEx leftLift;
+    private DcMotorEx shoulder;
+    private DcMotorEx extender;
     Servo claw;
     Servo wrist;
+    DrawerSlide scrollArm;
     private Controller controller1;
     private Controller controller2;
 
@@ -68,10 +69,10 @@ public class RightStage extends LinearOpMode {
         northWestMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         northEastMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        rightLift = hardwareMap.get(DcMotorEx.class, "rightArm");
-        leftLift = hardwareMap.get(DcMotorEx.class, "leftArm");
-        rightLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightLift.setDirection(DcMotorSimple.Direction.REVERSE);
+        shoulder = hardwareMap.get(DcMotorEx.class, "lift");
+        extender = hardwareMap.get(DcMotorEx.class, "length");
+        shoulder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shoulder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         claw = hardwareMap.get(Servo.class, "clawServo");
         wrist = hardwareMap.get(Servo.class, "wristServo");
@@ -81,18 +82,11 @@ public class RightStage extends LinearOpMode {
 
         magnet = hardwareMap.get(TouchSensor.class, "magneto");
 
+        scrollArm = new DrawerSlide(shoulder, extender, wrist, claw, magnet);
+
         initCamera();
         CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
 
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample OpMode
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-
-//        boolean initialize = IMU.initialize(parameters);
         IMU.Parameters perry = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
@@ -120,35 +114,10 @@ public class RightStage extends LinearOpMode {
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());
             telemetry.addData("ID: ", cam.getID(0));
-            //telemetry.addData("targetID: ", cam.getTargetID());
-            //telemetry.addData("left_stick_x:", controller1.left_stick_x_deadband());
-            //.addData("Name: ", maggie.getName(0));
-            //controller1.updateJoysticks();
-            /*telemetry.addData("X:", gps.getX());
-            telemetry.addData("Y:", gps.getY());
-            telemetry.addData("Arm Pos:", rightLift.getCurrentPosition());
-            telemetry.addData("a state", controller2.boolToInt(controller2.buttonToggleSingle(Controller.A)));
-            telemetry.addData("claw pos", claw.getPosition());
-            telemetry.update();*/
-            //rightLift.setPower(((magnet.isPressed()) ? -0.5 : 1) * controller2.left_stick_y());
-            rightLift.setPower(controller2.left_stick_y_deadband() * 0.6);
-            claw.setPosition((controller2.buttonToggleSingle(Controller.A)) ? 0.75 : 1.0);
-            /*if (controller1.buttonSingle(Controller.LEFT)) {
-                cam.targetIDMinus(1);
-            } else if (controller1.buttonSingle(Controller.RIGHT)) {
-                cam.targetIDPlus(1);
-            }
-            //will override every other input to drive train
-            if (cam.getTargetID() == -1) {
-                cam.startingTarget();
-            } else if (cam.getTargetID() > cam.getID(0)) {
-                    myDrive.setDrivePower(0, 0, 0, 0.5f);
-            } else if (cam.getTargetID() < cam.getID(0)) {
-                    myDrive.setDrivePower(0, 0, 0, -0.5f);
-            } else {
-                    myDrive.setDrivePower(0, 0, 0, 0);
-            }*/
-            //controller1.updateAll();
+            //arm controls
+            scrollArm.moveShoulder(0.5*controller2.left_stick_y);
+            scrollArm.moveExtend(0.5*controller2.right_stick_y);
+            //Drive Controls
             float slow = 1 - (controller1.left_trigger_deadband() * 0.5f);
             if (controller1.buttonCase(Controller.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
             else if (controller1.buttonCase(Controller.UP)) {myDrive.setDrivePower(0, -0.5f * slow, 0, 0);}
