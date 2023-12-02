@@ -202,16 +202,17 @@ public class DriveTrain {
         } else if (driveType == 3) {
             // left stick moves the robot, right stick rotates the robot
             //ZK - 11/22/2023 - Gyro Mediated Mecanum Drive
-            targetDegrees += powerRightX * 0.9;
+            targetDegrees += powerRightX * -18;
             targetDegrees %= 360;
             re = targetDegrees.toString();
-            double avgCurrentDegrees = imu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180;
             float rPow = (Math.abs(imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) > 5) ? (float) (imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) : 0.0f;
             re = re + "," + rPow;
-            rPow /= 360;
-            rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
+            if (Math.abs(rPow) > 0.0f) {
+                rPow /= 90.0f;
+                rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
+                rPow = (Math.abs(rPow) <= 0.35f) ? Math.signum(rPow) * 0.35f : rPow;
+            }
             re = re + "," + rPow;
-            //double leftX = powerLeftX * 1.1;
             double denominator = Math.max(Math.abs(powerLeftY) + Math.abs(powerLeftX) + Math.abs(rPow), 1);
             rightPowerF = ((-1 * powerLeftY + rPow - powerLeftX) / denominator) * 0.8;
             leftPowerF = ((-1 * powerLeftY + rPow + powerLeftX) / denominator) * 0.8;

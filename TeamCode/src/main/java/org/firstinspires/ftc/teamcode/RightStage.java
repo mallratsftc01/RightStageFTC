@@ -59,6 +59,9 @@ public class RightStage extends LinearOpMode {
     private IMUExpanded emu;
     private LocationServices gps;
 
+    long startTime;
+    long timesRun;
+
     @Override
     public void runOpMode() throws InterruptedException {
         northEastMotor = hardwareMap.get(DcMotorEx.class, "northeastMotor");
@@ -109,14 +112,18 @@ public class RightStage extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
+        startTime = System.currentTimeMillis() - 1000;
         while (opModeIsActive()) {
             gps.updatePositionGeneral();
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());
-            telemetry.addData("ID: ", cam.getID(0));
+            //telemetry.addData("ID: ", cam.getID(0));
             //arm controls
-            scrollArm.moveShoulder(0.5*controller2.left_stick_y);
-            scrollArm.moveExtend(0.5*controller2.right_stick_y);
+            telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
+            telemetry.addData("Times Looped", ++timesRun);
+            telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime) / 1000.0));
+            //scrollArm.moveShoulder(0.5*controller2.left_stick_y);
+            //scrollArm.moveExtend(0.5*controller2.right_stick_y);
             //Drive Controls
             float slow = 1 - (controller1.left_trigger_deadband() * 0.5f);
             if (controller1.buttonCase(Controller.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
