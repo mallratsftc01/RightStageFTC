@@ -55,7 +55,9 @@ public class RightStage extends LinearOpMode {
     private TouchSensor magnet;
 
     private IMU emu1;
-    private IMU emu2;
+    //private IMU emu2;
+    private ThreadedIMU tIMU;
+    Thread tIMURun;
     private IMUExpanded emu;
     private LocationServices gps;
 
@@ -87,41 +89,48 @@ public class RightStage extends LinearOpMode {
 
         scrollArm = new DrawerSlide(shoulder, extender, wrist, claw, magnet);
 
-        initCamera();
-        CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
+        //initCamera();
+        //CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
 
         IMU.Parameters perry = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
 
         emu1 = hardwareMap.get(IMU.class, "imu 1");
-        emu2 = hardwareMap.get(IMU.class, "imu 2");
+        //emu2 = hardwareMap.get(IMU.class, "imu 2");
         emu1.initialize(perry);
-        emu2.initialize(perry);
+        //emu2.initialize(perry);
+        tIMU = new ThreadedIMU(hardwareMap.get(IMU.class, "imu 1"));
+        tIMURun = new Thread(tIMU);
+        emu = new IMUExpanded(emu1);
 
-        emu = new IMUExpanded(emu1, emu2);
 
                 DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
 
-        gps = new LocationServices(0, 0, northEastMotor, northWestMotor, southEastMotor, southWestMotor, 0.9f, 0.7f, controller1, cam, 12.57f, emu1);
-        telemetry.addData("label: ", cam.getLabel(0));
-        telemetry.addData("Num Recogs: ", cam.numRecognitions());
-        telemetry.addData("ID: ", cam.getID(0));
-        telemetry.addData("targetID: ", cam.getTargetID());
-        telemetry.addData("left_stick_x:", controller1.left_stick_x_deadband());
+        //gps = new LocationServices(0, 0, northEastMotor, northWestMotor, southEastMotor, southWestMotor, 0.9f, 0.7f, controller1, cam, 12.57f, emu1);
+        //telemetry.addData("label: ", cam.getLabel(0));
+        //telemetry.addData("Num Recogs: ", cam.numRecognitions());
+        //telemetry.addData("ID: ", cam.getID(0));
+        //telemetry.addData("targetID: ", cam.getTargetID());
+        //telemetry.addData("left_stick_x:", controller1.left_stick_x_deadband());
+        telemetry.addData("yaw: ", tIMU.getYaw());
         telemetry.update();
 
         waitForStart();
+        tIMURun.start();
         startTime = System.currentTimeMillis() - 1000;
         while (opModeIsActive()) {
-            gps.updatePositionGeneral();
+            //gps.updatePositionGeneral();
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());
             //telemetry.addData("ID: ", cam.getID(0));
             //arm controls
+            telemetry.addData("ii: ", tIMU.getII());
+            telemetry.addData("yaw: ", tIMU.getYaw());
             telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
             telemetry.addData("Times Looped", ++timesRun);
-            telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime) / 1000.0));
+            telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
+            //myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband(), controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband(), emu);
             //scrollArm.moveShoulder(0.5*controller2.left_stick_y);
             //scrollArm.moveExtend(0.5*controller2.right_stick_y);
             //Drive Controls
@@ -131,8 +140,9 @@ public class RightStage extends LinearOpMode {
             else if (controller1.buttonCase(Controller.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
             else {
-                if (controller1.buttonToggleSingle(Controller.A)) {telemetry.addData("Target Degrees, degree distance, rPow, ", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu));
-                    telemetry.addData("avgCurrentAngle:", (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2 + 180);}
+                if (controller1.buttonToggleSingle(Controller.A)) {//telemetry.addData("Target Degrees, degree distance, rPow, ", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu));
+                    //telemetry.addData("avgCurrentAngle:", (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2 + 180);
+                    }
                 else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
             }
             telemetry.addData("2nd mode active:", controller1.buttonToggleSingle(Controller.A));
@@ -222,3 +232,4 @@ public class RightStage extends LinearOpMode {
 
     }*/
 }
+

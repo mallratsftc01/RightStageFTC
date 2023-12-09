@@ -224,7 +224,7 @@ public class DriveTrain {
             rightPower = powerRightY;
             leftPower = powerLeftY;
         }
-        setMotorPowers();
+        /*setMotorPowers();*/
         return re;
     }
 

@@ -38,6 +38,7 @@ public class IMUExpanded{
     /**Returns the average orientation of the IMU(s).*/
     public double avgIMU(int axis, AngleUnit angleUnit) {
         double r = 0;
+        /*
         for (int ii = 0; ii < imus.size(); ii++) {
             switch (axis) {
                 case 0:
@@ -50,7 +51,8 @@ public class IMUExpanded{
                     r += imus.get(ii).getRobotYawPitchRollAngles().getRoll(angleUnit);
                     break;
             }
-        }
+        }*/
+        r = imus.get(0).getRobotYawPitchRollAngles().getYaw(angleUnit);
         return r / imus.size();
     }
     /**Returns the distance between the current orientation of the IMU(s) and the target. Do not use, always use trueDistIMU.*/
