@@ -19,7 +19,7 @@ public class DrawerSlide {
     int shoulderStart;
     int extendStart;
 
-    /**Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.
+    /**Queer Coded by ZK. If you use this class or a method from this class in its entirety, please make sure to give credit.
      * <p></p>
      * Introduces methods useful for the implementation of a drawer slide based arm system.*/
     public DrawerSlide(DcMotorEx shoulder, DcMotorEx extend, Servo wrist, Servo pinch, TouchSensor magnet) {
