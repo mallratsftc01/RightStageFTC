@@ -131,8 +131,8 @@ public class RightStage extends LinearOpMode {
             telemetry.addData("Times Looped", ++timesRun);
             telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
             //myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband(), controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband(), emu);
-            //scrollArm.moveShoulder(0.5*controller2.left_stick_y);
-            //scrollArm.moveExtend(0.5*controller2.right_stick_y);
+            scrollArm.moveShoulder(0.5*controller2.left_stick_y);
+            scrollArm.moveExtend(0.5*controller2.right_stick_y);
             //Drive Controls
             float slow = 1 - (controller1.left_trigger_deadband() * 0.5f);
             if (controller1.buttonCase(Controller.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}

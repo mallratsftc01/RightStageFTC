@@ -2,7 +2,7 @@ package com.epra;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
-//Queer coded - Zachary Kraut
+//Queer coded - Zachy K
 public class Controller extends Gamepad {
     Gamepad gamepad = new Gamepad();
     //int IDs of each button
@@ -28,7 +28,7 @@ public class Controller extends Gamepad {
 
     /**Extends the Gamepad Class.
      * <p></p>
-     * Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.
+     * Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
      * <p></p>
      * Introduces new functionality to joysticks, triggers, and buttons.
      * <p></p>

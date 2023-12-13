@@ -11,7 +11,7 @@ public class IMUExpanded{
     ArrayList<IMU> imus = new ArrayList<IMU>();
     /**Increases the functionality of the IMU class.
      *<p></p>
-     *Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.
+     *Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
      *<p></p>
      *Expands the functionality of one IMU.*/
     public IMUExpanded(IMU imu) {
@@ -19,7 +19,7 @@ public class IMUExpanded{
     }
     /**Increases the functionality of the IMU class.
      *<p></p>
-     *Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.
+     *Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
      *<p></p>
      *Expands the functionality of two IMUs.*/
     public IMUExpanded(IMU imu1, IMU imu2) {
@@ -28,7 +28,7 @@ public class IMUExpanded{
     }
     /**Increases the functionality of the IMU class.
      *<p></p>
-     *Queer Coded by Zachary Kraut. If you use this class or a method from this class in its entirety, please make sure to give credit.
+     *Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
      *<p></p>
      *Expands the functionality of one or more IMUs.*/
     public IMUExpanded(IMU[] imu) {
