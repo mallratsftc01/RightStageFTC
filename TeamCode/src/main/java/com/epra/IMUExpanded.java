@@ -30,7 +30,7 @@ public class IMUExpanded{
      *<p></p>
      *Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
      *<p></p>
-     *Expands the functionality of one or more IMUs.*/
+     *Expands the functionality of multiple IMUs.*/
     public IMUExpanded(IMU[] imu) {
         for (IMU e : imu) {imus.add(e);}
     }

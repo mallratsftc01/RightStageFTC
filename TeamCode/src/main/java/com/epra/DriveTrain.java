@@ -176,7 +176,7 @@ public class DriveTrain {
         setMotorPowers();
     }
 
-    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMUExpanded imu) {
+    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMUStorage imu) {
         String re = "";
         if (driveType == 0) {
             // Tank Drive

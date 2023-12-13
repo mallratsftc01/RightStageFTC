@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -55,11 +56,14 @@ public class RightStage extends LinearOpMode {
     private TouchSensor magnet;
 
     private IMU emu1;
-    //private IMU emu2;
-    private ThreadedIMU tIMU;
-    Thread tIMURun;
+    private IMU emu2;
     private IMUExpanded emu;
+    private IMUStorage emuStorage;
+    private final int IMU_FREQUENCY = 50;
+    private int emuCounter = 0;
     private LocationServices gps;
+
+    List<LynxModule> allHubs;
 
     long startTime;
     long timesRun;
@@ -97,36 +101,46 @@ public class RightStage extends LinearOpMode {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
 
         emu1 = hardwareMap.get(IMU.class, "imu 1");
-        //emu2 = hardwareMap.get(IMU.class, "imu 2");
+        emu2 = hardwareMap.get(IMU.class, "imu 2");
         emu1.initialize(perry);
-        //emu2.initialize(perry);
-        tIMU = new ThreadedIMU(hardwareMap.get(IMU.class, "imu 1"));
-        tIMURun = new Thread(tIMU);
-        emu = new IMUExpanded(emu1);
+        emu2.initialize(perry);
+        emu = new IMUExpanded(emu1, emu2);
+        emuStorage = new IMUStorage(emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES),
+                emu.avgIMU(IMUExpanded.PITCH, AngleUnit.DEGREES),
+                emu.avgIMU(IMUExpanded.ROLL, AngleUnit.DEGREES),
+                emu.avgIMU(IMUExpanded.YAW, AngleUnit.RADIANS),
+                emu.avgIMU(IMUExpanded.PITCH, AngleUnit.RADIANS),
+                emu.avgIMU(IMUExpanded.ROLL, AngleUnit.RADIANS));
 
+        DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
 
-                DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
-
-        //gps = new LocationServices(0, 0, northEastMotor, northWestMotor, southEastMotor, southWestMotor, 0.9f, 0.7f, controller1, cam, 12.57f, emu1);
-        //telemetry.addData("label: ", cam.getLabel(0));
-        //telemetry.addData("Num Recogs: ", cam.numRecognitions());
-        //telemetry.addData("ID: ", cam.getID(0));
-        //telemetry.addData("targetID: ", cam.getTargetID());
-        //telemetry.addData("left_stick_x:", controller1.left_stick_x_deadband());
-        telemetry.addData("yaw: ", tIMU.getYaw());
-        telemetry.update();
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule module : allHubs) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
         waitForStart();
-        tIMURun.start();
         startTime = System.currentTimeMillis() - 1000;
         while (opModeIsActive()) {
+            for (LynxModule module : allHubs) {
+                module.clearBulkCache();
+            }
+            if (emuCounter < IMU_FREQUENCY) {emuCounter++;}
+            else {emuStorage.updateIMUValues(emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES),
+                    emu.avgIMU(IMUExpanded.PITCH, AngleUnit.DEGREES),
+                    emu.avgIMU(IMUExpanded.ROLL, AngleUnit.DEGREES),
+                    emu.avgIMU(IMUExpanded.YAW, AngleUnit.RADIANS),
+                    emu.avgIMU(IMUExpanded.PITCH, AngleUnit.RADIANS),
+                    emu.avgIMU(IMUExpanded.ROLL, AngleUnit.RADIANS));
+                emuCounter = 0;}
+
             //gps.updatePositionGeneral();
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());
             //telemetry.addData("ID: ", cam.getID(0));
             //arm controls
-            telemetry.addData("ii: ", tIMU.getII());
-            telemetry.addData("yaw: ", tIMU.getYaw());
+            telemetry.addData("emuCounter: ", emuCounter);
+            telemetry.addData("yaw: ", emuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
             telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
             telemetry.addData("Times Looped", ++timesRun);
             telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
@@ -140,7 +154,7 @@ public class RightStage extends LinearOpMode {
             else if (controller1.buttonCase(Controller.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
             else {
-                if (controller1.buttonToggleSingle(Controller.A)) {//telemetry.addData("Target Degrees, degree distance, rPow, ", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emu));
+                if (controller1.buttonToggleSingle(Controller.A)) {telemetry.addData("Target Degrees, degree distance, rPow, ", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emuStorage));
                     //telemetry.addData("avgCurrentAngle:", (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2 + 180);
                     }
                 else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
