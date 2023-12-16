@@ -1,45 +1,96 @@
 package com.epra.storage;
 
+import com.epra.IMUExpanded;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 public class SensorStorageMaster {
-    public final int MOTOR_POSITIONS = 0;
-     public final int MOTOR_VELOCITIES = 1;
-    public final int BINARY_SENSORS = 2;
-    public final int IMU_STORAGE = 3;
-    public final int MOTOR_POSITION_FREQUENCY = 10;
-    private int mpTracker = 0;
-    public final int MOTOR_VELOCITY_FREQUENCY = 10;
-    private int mvTracker = 5;
+    public final int MOTOR_FREQUENCY = 10;
+    private int mTracker = 0;
     public final int BINARY_SENSOR_FREQUENCY = 20;
     private int bsTracker = 0;
     public final int IMU_STORAGE_FREQUENCY = 50;
     private int imuTracker = 0;
+    private DcMotorEx[] motors;
+    private TouchSensor[] touchSensors;
+    private IMUExpanded imu;
     public SensorIntStorage motorPositions;
     public SensorDoubleStorage motorVelocities;
     public SensorBooleanStorage binarySensors;
-    public IMUStorage imu;
+    public IMUStorage imuStorage;
     /**Stores values from sensors and coordinates their updating.
     *<p></p>
     *Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-    public SensorStorageMaster() {}
-    /**Initializes the motor positions storage.*/
-    public void initMotorPositions(int[] startValues) {motorPositions = new SensorIntStorage(startValues);}
-    /**Initializes the motor velocities storage.*/
-    public void initMotorVelocities(double[] startValues) {motorVelocities = new SensorDoubleStorage(startValues);}
-    /**Initializes the binary sensors storage.*/
-    public void initBinarySensors(boolean[] startValues) {binarySensors = new SensorBooleanStorage(startValues);}
-    /**Initializes the imu storage.*/
-    public void initIMUStorage(double yawDegrees, double pitchDegrees, double rollDegrees, double yawRadians, double pitchRadians, double rollRadians) {imu = new IMUStorage(yawDegrees,  pitchDegrees,  rollDegrees, yawRadians, pitchRadians, rollRadians);}
-    /**Checks which sets are ready to be updated, returns -1 if no sets should be updated.*/
-    public int checkTrackers() {
-        mpTracker++; mvTracker++; bsTracker++; imuTracker++;
-        if (mpTracker >= MOTOR_POSITION_FREQUENCY) {mpTracker = 0;
-            return MOTOR_POSITIONS;}
-        else if (mvTracker >= MOTOR_VELOCITY_FREQUENCY) {mvTracker = 0;
-            return MOTOR_VELOCITIES;}
-        else if (bsTracker >= BINARY_SENSOR_FREQUENCY) {bsTracker = 0;
-            return BINARY_SENSORS;}
-        else if (imuTracker >= IMU_STORAGE_FREQUENCY) {imuTracker = 0;
-            return IMU_STORAGE;}
-        else {return -1;}
+    public SensorStorageMaster(DcMotorEx[] motorsIn, TouchSensor[] touchSensorsIn, IMUExpanded imuIn) {
+        motors = new DcMotorEx[motorsIn.length];
+        for (int ii = 0; ii < motorsIn.length; ii++) {motors[ii] = motorsIn[ii];}
+        touchSensors = new TouchSensor[touchSensorsIn.length];
+        for (int ii = 0; ii < touchSensorsIn.length; ii++) {touchSensors[ii] = touchSensorsIn[ii];}
+        imu = imuIn;
+
+        int[] p = new int[motors.length];
+        double[] v = new double[motors.length];
+        for (int ii = 0; ii < motors.length; ii++) {
+            p[ii] = motors[ii].getCurrentPosition();
+            v[ii] = motors[ii].getVelocity();
+        }
+        motorPositions = new SensorIntStorage(p);
+        motorVelocities = new SensorDoubleStorage(v);
+
+        boolean[] b = new boolean[touchSensors.length];
+        for (int ii = 0; ii < touchSensors.length; ii++) {b[ii] = touchSensors[ii].isPressed();}
+        binarySensors = new SensorBooleanStorage(b);
+
+        imuStorage = new IMUStorage(
+                imu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES),
+                imu.avgIMU(IMUExpanded.PITCH, AngleUnit.DEGREES),
+                imu.avgIMU(IMUExpanded.ROLL, AngleUnit.DEGREES),
+                imu.avgIMU(IMUExpanded.YAW, AngleUnit.RADIANS),
+                imu.avgIMU(IMUExpanded.PITCH, AngleUnit.RADIANS),
+                imu.avgIMU(IMUExpanded.ROLL, AngleUnit.RADIANS));
+    }
+    /**Updates the values associated with the motors.*/
+    public void updateMotors() {
+        int[] p = new int[motors.length];
+        double[] v = new double[motors.length];
+        for (int ii = 0; ii < motors.length; ii++) {
+            p[ii] = motors[ii].getCurrentPosition();
+            v[ii] = motors[ii].getVelocity();
+        }
+        motorPositions.setSensorValues(p);
+        motorVelocities.setSensorValues(v);
+    }
+    /**Updates the values associated with the binary sensors.*/
+    public void updateBinarySensors() {
+        boolean[] b = new boolean[touchSensors.length];
+        for (int ii = 0; ii < touchSensors.length; ii++) {b[ii] = touchSensors[ii].isPressed();}
+        binarySensors.setSensorValues(b);
+    }
+    /**Updates the values associated with the IMU.*/
+    public void updateIMU() {
+        imuStorage.updateIMUValues(
+                imu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES),
+                imu.avgIMU(IMUExpanded.PITCH, AngleUnit.DEGREES),
+                imu.avgIMU(IMUExpanded.ROLL, AngleUnit.DEGREES),
+                imu.avgIMU(IMUExpanded.YAW, AngleUnit.RADIANS),
+                imu.avgIMU(IMUExpanded.PITCH, AngleUnit.RADIANS),
+                imu.avgIMU(IMUExpanded.ROLL, AngleUnit.RADIANS));
+    }
+    /**Updates all values at their frequency.*/
+    public void update() {
+        if (++mTracker >= MOTOR_FREQUENCY) {
+            mTracker = 0;
+            updateMotors();
+        }
+        if (++bsTracker >= BINARY_SENSOR_FREQUENCY) {
+            bsTracker = 0;
+            updateBinarySensors();
+        }
+        if (++imuTracker >= IMU_STORAGE_FREQUENCY) {
+            imuTracker = 0;
+            updateIMU();
+        }
     }
 }
