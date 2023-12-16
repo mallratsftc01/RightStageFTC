@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.epra.storage.IMUStorage;
+import com.epra.storage.SensorStorageMaster;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -46,10 +47,9 @@ public class RightStage extends LinearOpMode {
     private IMU emu2;
     private IMUExpanded emu;
     private IMUStorage emuStorage;
-    private final int IMU_FREQUENCY = 50;
-    private int emuCounter = 0;
     private LocationServices gps;
 
+    SensorStorageMaster storageMaster;
     List<LynxModule> allHubs;
 
     long startTime;
@@ -101,6 +101,8 @@ public class RightStage extends LinearOpMode {
 
         DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
 
+        storageMaster = new SensorStorageMaster(new DcMotorEx[]{northEastMotor, northWestMotor, southEastMotor, southWestMotor, shoulder, extender}, new TouchSensor[]{magnet}, emu);
+
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -112,21 +114,12 @@ public class RightStage extends LinearOpMode {
             for (LynxModule module : allHubs) {
                 module.clearBulkCache();
             }
-            if (emuCounter < IMU_FREQUENCY) {emuCounter++;}
-            else {emuStorage.updateIMUValues(emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES),
-                    emu.avgIMU(IMUExpanded.PITCH, AngleUnit.DEGREES),
-                    emu.avgIMU(IMUExpanded.ROLL, AngleUnit.DEGREES),
-                    emu.avgIMU(IMUExpanded.YAW, AngleUnit.RADIANS),
-                    emu.avgIMU(IMUExpanded.PITCH, AngleUnit.RADIANS),
-                    emu.avgIMU(IMUExpanded.ROLL, AngleUnit.RADIANS));
-                emuCounter = 0;}
-
+            storageMaster.update();
             //gps.updatePositionGeneral();
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());
             //telemetry.addData("ID: ", cam.getID(0));
             //arm controls
-            telemetry.addData("emuCounter: ", emuCounter);
             telemetry.addData("yaw: ", emuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
             telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
             telemetry.addData("Times Looped", ++timesRun);
