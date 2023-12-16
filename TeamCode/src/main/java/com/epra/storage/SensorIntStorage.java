@@ -21,7 +21,7 @@ public class SensorIntStorage {
     }
     /**Returns the stored int array.*/
     public int[] getSensorValues() {return sensorValues;}
-    /**Returns a certain value from the stored array if successful. If provided index is out of range, will return false.*/
+    /**Returns a certain value from the stored array if successful. If provided index is out of range, will return 0.*/
     public int getSensorValue(int index) {if (index < sensorValues.length) {return sensorValues[index];}
         else {return 0;}
     }
