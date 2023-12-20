@@ -61,7 +61,6 @@ public class RightStage extends LinearOpMode {
         northWestMotor = hardwareMap.get(DcMotorEx.class, "northwestMotor");
         southEastMotor = hardwareMap.get(DcMotorEx.class, "southeastMotor");
         southWestMotor = hardwareMap.get(DcMotorEx.class, "southwestMotor");
-        //southWestMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         northWestMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         northEastMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -113,13 +112,16 @@ public class RightStage extends LinearOpMode {
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());
             //telemetry.addData("ID: ", cam.getID(0));
-            telemetry.addData("Yaw: ", storageMaster.imuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
+            //telemetry.addData("Yaw: ", storageMaster.imuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
             telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
             telemetry.addData("Times Looped", ++timesRun);
             telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
             //arm controls
             scrollArm.moveShoulder(0.5*controller2.left_stick_y);
             scrollArm.moveExtend(0.5*controller2.right_stick_y);
+            claw.setPosition((controller2.a) ? 1.0 : 0);
+            telemetry.addData("Extend pos: ", extender.getCurrentPosition());
+            telemetry.addData("Shoulder pos: ", shoulder.getCurrentPosition());
             //Drive Controls
             float slow = 1 - (controller1.left_trigger_deadband() * 0.5f);
             //dpad drive
