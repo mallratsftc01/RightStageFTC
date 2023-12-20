@@ -92,12 +92,6 @@ public class RightStage extends LinearOpMode {
         emu1.initialize(perry);
         emu2.initialize(perry);
         emu = new IMUExpanded(emu1, emu2);
-        emuStorage = new IMUStorage(emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES),
-                emu.avgIMU(IMUExpanded.PITCH, AngleUnit.DEGREES),
-                emu.avgIMU(IMUExpanded.ROLL, AngleUnit.DEGREES),
-                emu.avgIMU(IMUExpanded.YAW, AngleUnit.RADIANS),
-                emu.avgIMU(IMUExpanded.PITCH, AngleUnit.RADIANS),
-                emu.avgIMU(IMUExpanded.ROLL, AngleUnit.RADIANS));
 
         DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
 
@@ -119,27 +113,22 @@ public class RightStage extends LinearOpMode {
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());
             //telemetry.addData("ID: ", cam.getID(0));
-            //arm controls
-            telemetry.addData("yaw: ", emuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
+            telemetry.addData("Yaw: ", storageMaster.imuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
             telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
             telemetry.addData("Times Looped", ++timesRun);
             telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
-            //myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband(), controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband(), emu);
+            //arm controls
             scrollArm.moveShoulder(0.5*controller2.left_stick_y);
             scrollArm.moveExtend(0.5*controller2.right_stick_y);
             //Drive Controls
             float slow = 1 - (controller1.left_trigger_deadband() * 0.5f);
+            //dpad drive
             if (controller1.buttonCase(Controller.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
             else if (controller1.buttonCase(Controller.UP)) {myDrive.setDrivePower(0, -0.5f * slow, 0, 0);}
             else if (controller1.buttonCase(Controller.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
-            else {
-                if (controller1.buttonToggleSingle(Controller.A)) {telemetry.addData("Target Degrees, degree distance, rPow, ", myDrive.setDrivePower(controller1.right_stick_y_deadband(), controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband(), controller1.left_stick_x_deadband() * slow, emuStorage));
-                    //telemetry.addData("avgCurrentAngle:", (emu1.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + emu2.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)) / 2 + 180);
-                    }
-                else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
-            }
-            telemetry.addData("2nd mode active:", controller1.buttonToggleSingle(Controller.A));
+            //default to normal drive
+            else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
             telemetry.update();
         }
     }

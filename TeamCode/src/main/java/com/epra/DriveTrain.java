@@ -3,6 +3,7 @@ package com.epra;
 import androidx.annotation.NonNull;
 
 import com.epra.storage.IMUStorage;
+import com.epra.storage.SensorStorageMaster;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -170,7 +171,7 @@ public class DriveTrain {
         setMotorPowers();
     }
 
-    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMUStorage imu) {
+    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, SensorStorageMaster storage) {
         String re = "";
         if (driveType == 0) {
             // Tank Drive
@@ -199,7 +200,7 @@ public class DriveTrain {
             targetDegrees += powerRightX * -18;
             targetDegrees %= 360;
             re = targetDegrees.toString();
-            float rPow = (Math.abs(imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) > 5) ? (float) (imu.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) : 0.0f;
+            float rPow = (Math.abs(storage.imuStorage.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) > 5) ? (float) (storage.imuStorage.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) : 0.0f;
             re = re + "," + rPow;
             if (Math.abs(rPow) > 0.0f) {
                 rPow /= 90.0f;
@@ -218,7 +219,7 @@ public class DriveTrain {
             rightPower = powerRightY;
             leftPower = powerLeftY;
         }
-        /*setMotorPowers();*/
+        setMotorPowers();
         return re;
     }
 

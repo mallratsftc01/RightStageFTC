@@ -22,12 +22,12 @@ public class DrawerSlide {
     /**Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
      * <p></p>
      * Introduces methods useful for the implementation of a drawer slide based arm system.*/
-    public DrawerSlide(DcMotorEx shoulder, DcMotorEx extend, Servo wrist, Servo pinch, TouchSensor magnet) {
-        this.shoulder = shoulder;
-        this.extend = extend;
-        this.wrist = wrist;
-        this.pinch = pinch;
-        this.magnet = magnet;
+    public DrawerSlide(DcMotorEx shoulderIn, DcMotorEx extendIn, Servo wristIn, Servo pinchIn, TouchSensor magnetIn) {
+        shoulder = shoulderIn;
+        extend = extendIn;
+        wrist = wristIn;
+        pinch = pinchIn;
+        magnet = magnetIn;
 
         shoulderStart = shoulder.getCurrentPosition();
         extendStart = extend.getCurrentPosition();
