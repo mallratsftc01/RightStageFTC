@@ -117,9 +117,10 @@ public class RightStage extends LinearOpMode {
             telemetry.addData("Times Looped", ++timesRun);
             telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
             //arm controls
-            scrollArm.moveShoulder(0.5*controller2.left_stick_y);
-            scrollArm.moveExtend(0.5*controller2.right_stick_y);
+            scrollArm.moveShoulder(0.5*controller2.left_stick_y_deadband());
+            telemetry.addData("magnet: ", magnet.getValue());
             claw.setPosition((controller2.a) ? 1.0 : 0);
+            scrollArm.moveExtendMagnet(controller2.right_stick_y_deadband(), -0.5*controller2.right_stick_y_deadband());
             telemetry.addData("Extend pos: ", extender.getCurrentPosition());
             telemetry.addData("Shoulder pos: ", shoulder.getCurrentPosition());
             //Drive Controls
