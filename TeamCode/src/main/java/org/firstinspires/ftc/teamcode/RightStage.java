@@ -23,6 +23,19 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.core.Core;
+import org.opencv.core.Rect;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
+import org.openftc.easyopencv.PipelineRecordingParameters;
+
 @TeleOp
 public class RightStage extends LinearOpMode {
     private DcMotorEx northEastMotor;
@@ -40,6 +53,11 @@ public class RightStage extends LinearOpMode {
     private AprilTagProcessor aprilTag;
     private TfodProcessor tfod;
     private VisionPortal visionPortal;
+
+    OpenCvWebcam webcam;
+    ElementDeterminationPipeline pipeline;
+    ElementDeterminationPipeline.ElementPosition snapshotAnalysis = ElementDeterminationPipeline.ElementPosition.LEFT; // default
+    ElementDeterminationPipeline.ElementColor snapshotTeam = ElementDeterminationPipeline.ElementColor.BLUE;
 
     private TouchSensor magnet;
 
@@ -79,6 +97,44 @@ public class RightStage extends LinearOpMode {
 
         scrollArm = new DrawerSlide(shoulder, extender, wrist, claw, magnet);
 
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        pipeline = new ElementDeterminationPipeline(0, 130, 260, 180, 165, 180, 30, 60);
+        webcam.setPipeline(pipeline);
+        webcam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                /*
+                 * Tell the webcam to start streamaxg images to us! Note that you must make sure
+                 * the resolution you specify is supported by the camera. If it is not, an exception
+                 * will be thrown.
+                 *
+                 * Keep in maxd that the SDK's UVC driver (what OpenCvWebcam uses under the hood) only
+                 * supports streamaxg from the webcam in the uncompressed YUV image format. This means
+                 * that the maximum resolution you can stream at and still get up to 30FPS is 480p (640x480).
+                 * Streamaxg at e.g. 720p will limit you to up to 10FPS and so on and so forth.
+                 *
+                 * Also, we specify the rotation that the webcam is used in. This is so that the image
+                 * from the camera sensor can be rotated such that it is always displayed with the image upright.
+                 * For a front facing camera, rotation is defined assumaxg the user is looking at the screen.
+                 * For a rear facing camera or a webcam, rotation is defined assumaxg the camera is facing
+                 * away from the user.
+                 */
+                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode)
+            {
+                /*
+                 * This will be called if the camera could not be opened
+                 */
+            }
+        });
+
         //initCamera();
         //CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
 
@@ -101,7 +157,58 @@ public class RightStage extends LinearOpMode {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
-        waitForStart();
+        //for (int ii = 0; ii < 20000; ii++) {if (cam.getPixelCheckStep() < 15000) {cam.pixelPosition(5000);}}
+        /*
+         * The INIT-loop:
+         * This REPLACES waitForStart!
+         */
+        while (!isStarted() && !isStopRequested())
+        {
+            if (pipeline.getPosition() != null) {
+                telemetry.addData("Realtime analysis", pipeline.getPosition());
+                telemetry.addData("Realtime color", pipeline.getColor());
+                telemetry.update();
+            }
+
+            // Don't burn CPU cycles busy-looping in this sample
+            sleep(50);
+        }
+
+        /*
+         * The START command just came in: snapshot the current analysis now
+         * for later use. We must do this because the analysis will continue
+         * to change as the camera view changes once the robot starts moving!
+         */
+        snapshotAnalysis = pipeline.getPosition();
+        snapshotTeam = pipeline.getColor();
+
+        /*
+         * Show that snapshot on the telemetry
+         */
+        telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
+        telemetry.addData("Snapshot post-START color", snapshotTeam);
+        telemetry.update();
+
+        switch (snapshotAnalysis)
+        {
+            case LEFT:
+            {
+                /* Your autonomous code */
+                break;
+            }
+
+            case RIGHT:
+            {
+                /* Your autonomous code */
+                break;
+            }
+
+            case CENTER:
+            {
+                /* Your autonomous code*/
+                break;
+            }
+        }
         startTime = System.currentTimeMillis() - 1000;
         while (opModeIsActive()) {
             for (LynxModule module : allHubs) {
@@ -117,12 +224,14 @@ public class RightStage extends LinearOpMode {
             telemetry.addData("Times Looped", ++timesRun);
             telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
             //arm controls
-            scrollArm.moveShoulder(0.5*controller2.left_stick_y_deadband());
+            scrollArm.moveShoulder(0.5 * controller2.left_stick_y_deadband());
             telemetry.addData("magnet: ", magnet.getValue());
             claw.setPosition((controller2.a) ? 1.0 : 0);
             scrollArm.moveExtendMagnet(controller2.right_stick_y_deadband(), -0.5*controller2.right_stick_y_deadband());
             telemetry.addData("Extend pos: ", extender.getCurrentPosition());
             telemetry.addData("Shoulder pos: ", shoulder.getCurrentPosition());
+            telemetry.addData("Shoulder velo: ", shoulder.getVelocity());
+
             //Drive Controls
             float slow = 1 - (controller1.left_trigger_deadband() * 0.5f);
             //dpad drive
