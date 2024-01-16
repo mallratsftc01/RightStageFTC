@@ -279,8 +279,12 @@ public class UniversalColorDeterminationPipeline extends OpenCvPipeline {
         return input;
     }
 
-    /**Returns the position of the element*/
+    /**Returns the region with an average color closest to the target*/
     public int getRegion() {return elementRegion;}
-    /**Returns the color of the element*/
+    /**Returns the average Cr value of the closest region*/
+    public int getCr() {return avgCr[elementRegion];}
+    /**Returns the average Cb value of the closest region*/
+    public int getCb() {return avgCb[elementRegion];}
+    /**Returns the color of the closest region*/
     public ElementColor getColor() {return color;}
 }
