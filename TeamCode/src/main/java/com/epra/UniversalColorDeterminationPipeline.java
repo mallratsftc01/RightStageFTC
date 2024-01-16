@@ -78,7 +78,7 @@ public class UniversalColorDeterminationPipeline extends OpenCvPipeline {
     /**This class will detect a solidly red or solidly blue team element and return its position and color.
      * <p></p>
      * This code was derived from code from EasyOpenCV by Windwoes and edited by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
-     * You can find OpenCV at https://github.com/OpenFTC/EasyOpenCV
+     * You can find OpenCV at <a href="https://github.com/OpenFTC/EasyOpenCV">https://github.com/OpenFTC/EasyOpenCV</a>
      * <p></p>
      * Each x, y pair determines the upper left-hand corner of each analysis area,
      * the width and height determines the size of each analysis area.
