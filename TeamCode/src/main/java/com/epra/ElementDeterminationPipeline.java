@@ -116,7 +116,7 @@ public class ElementDeterminationPipeline extends OpenCvPipeline {
     }
     /**Initializes the class.*/
     @Override
-    public void init(Mat firstFrame) {
+    public void init (Mat firstFrame) {
         /*
          * We need to call this in order to make sure the 'Cb'
          * object is initialized, so that the submats we make
@@ -143,8 +143,7 @@ public class ElementDeterminationPipeline extends OpenCvPipeline {
 
     /**Finds the position and color of the element for a frame*/
     @Override
-    public Mat processFrame(Mat input)
-    {
+    public Mat processFrame (Mat input) {
         /*
          * Overview of what we're doing:
          *
@@ -160,29 +159,28 @@ public class ElementDeterminationPipeline extends OpenCvPipeline {
          * light intensity, since that difference would most likely just be
          * reflected in the Y channel.
          *
-         * After we've converted to YCrCb, we extract just the 2nd channel, the
-         * Cb channel. We do this because stones are bright yellow and contrast
-         * STRONGLY on the Cb channel against everything else, including SkyStones
-         * (because SkyStones have a black label).
+         * For detecting team elements we extract both Cr and Cb channels.
+         * The Cr channel is used to identify the red element and the Cb does the
+         * same for the blue. If the Cr value is high, it is red, the same goes
+         * for Cb and blue. We do not just use one channel because the inverse of red
+         * in YCrCb is not blue, nor is red the opposite of red.
          *
          * We then take the average pixel value of 3 different regions on that Cb
-         * channel, one positioned over each stone. The brightest of the 3 regions
-         * is where we assume the SkyStone to be, since the normal stones show up
-         * extremely darkly.
+         * channel, one positioned over potential location of the element. The brightest
+         * of the 3 regions in blue or red is where the element is positioned. By
+         * looking at the two channels and seeing which is brighter we can also identify
+         * the color of the element, which may prove helpful.
          *
          * We also draw rectangles on the screen showing where the sample regions
          * are, as well as drawing a solid rectangle over top the sample region
-         * we believe is on top of the SkyStone.
+         * we believe is on top of the element.
          *
          * In order for this whole process to work correctly, each sample region
-         * should be positioned in the center of each of the first 3 stones, and
-         * be small enough such that only the stone is sampled, and not any of the
+         * should be positioned in the center of each of the potential locations, and
+         * be small enough such that only the element is sampled, and not any of the
          * surroundings.
          */
 
-        /*
-         * Get the Cb channel of the input frame after conversion to YCrCb
-         */
         inputToCbCr(input);
 
         /*

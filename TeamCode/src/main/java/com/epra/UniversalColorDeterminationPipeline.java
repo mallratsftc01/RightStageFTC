@@ -147,46 +147,7 @@ public class UniversalColorDeterminationPipeline extends OpenCvPipeline {
 
     /**Finds the position and color of the element for a frame*/
     @Override
-    public Mat processFrame(Mat input)
-    {
-        /*
-         * Overview of what we're doing:
-         *
-         * We first convert to YCrCb color space, from RGB color space.
-         * Why do we do this? Well, in the RGB color space, chroma and
-         * luma are intertwined. In YCrCb, chroma and luma are separated.
-         * YCrCb is a 3-channel color space, just like RGB. YCrCb's 3 channels
-         * are Y, the luma channel (which essentially just a B&W image), the
-         * Cr channel, which records the difference from red, and the Cb channel,
-         * which records the difference from blue. Because chroma and luma are
-         * not related in YCrCb, vision code written to look for certain values
-         * in the Cr/Cb channels will not be severely affected by differing
-         * light intensity, since that difference would most likely just be
-         * reflected in the Y channel.
-         *
-         * After we've converted to YCrCb, we extract just the 2nd channel, the
-         * Cb channel. We do this because stones are bright yellow and contrast
-         * STRONGLY on the Cb channel against everything else, including SkyStones
-         * (because SkyStones have a black label).
-         *
-         * We then take the average pixel value of 3 different regions on that Cb
-         * channel, one positioned over each stone. The brightest of the 3 regions
-         * is where we assume the SkyStone to be, since the normal stones show up
-         * extremely darkly.
-         *
-         * We also draw rectangles on the screen showing where the sample regions
-         * are, as well as drawing a solid rectangle over top the sample region
-         * we believe is on top of the SkyStone.
-         *
-         * In order for this whole process to work correctly, each sample region
-         * should be positioned in the center of each of the first 3 stones, and
-         * be small enough such that only the stone is sampled, and not any of the
-         * surroundings.
-         */
-
-        /*
-         * Get the Cb channel of the input frame after conversion to YCrCb
-         */
+    public Mat processFrame (Mat input) {
         inputToCbCr(input);
 
         /*
