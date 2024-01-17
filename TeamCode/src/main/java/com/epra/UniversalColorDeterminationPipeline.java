@@ -75,7 +75,7 @@ public class UniversalColorDeterminationPipeline extends OpenCvPipeline {
     int targetCb;
     int reqProx;
 
-    /**This class will detect a solidly red or solidly blue team element and return its position and color.
+    /**This class will detect a specified color in any number of regions and return the region that most closely matches that color.
      * <p></p>
      * This code was derived from code from EasyOpenCV by Windwoes and edited by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
      * You can find OpenCV at <a href="https://github.com/OpenFTC/EasyOpenCV">https://github.com/OpenFTC/EasyOpenCV</a>
@@ -221,7 +221,7 @@ public class UniversalColorDeterminationPipeline extends OpenCvPipeline {
         //find which value is closest to the target
 
         int[] proxTotal = new int[regions.length];
-        for (int ii = 0; ii < proxTotal.length; ii++) {proxTotal[ii] = (Math.abs(targetCr - avgCr[ii]) + Math.abs(targetCb - avgCb[ii])) / 2;}
+        for (int ii = 0; ii < proxTotal.length; ii++) {proxTotal[ii] = (int)Math.sqrt(Math.pow(targetCr - avgCr[ii], 2) + Math.pow(targetCb - avgCb[ii], 2));}
         int min = proxTotal[0];
         if (proxTotal.length > 1) {
             min = Math.min(proxTotal[0], proxTotal[1]);
@@ -248,13 +248,13 @@ public class UniversalColorDeterminationPipeline extends OpenCvPipeline {
         }
 
         //determines the closest color
-        int proxWhite = (int)(Math.abs(WHITE.x - avgCr[min]) + Math.abs(WHITE.y - avgCb[min])) / 2;
-        int proxGreen = (int)(Math.abs(GREEN.x - avgCr[min]) + Math.abs(GREEN.y - avgCb[min])) / 2;
-        int proxYellow = (int)(Math.abs(YELLOW.x - avgCr[min]) + Math.abs(YELLOW.y - avgCb[min])) / 2;
-        int proxRed = (int)(Math.abs(RED.x - avgCr[min]) + Math.abs(RED.y - avgCb[min])) / 2;
-        int proxMagenta = (int)(Math.abs(MAGENTA.x - avgCr[min]) + Math.abs(MAGENTA.y - avgCb[min])) / 2;
-        int proxBlue = (int)(Math.abs(BLUE.x - avgCr[min]) + Math.abs(BLUE.y - avgCb[min])) / 2;
-        int proxCyan = (int)(Math.abs(CYAN.x - avgCr[min]) + Math.abs(CYAN.y - avgCb[min])) / 2;
+        int proxWhite = (int)Math.sqrt(Math.pow(WHITE.x - avgCr[min], 2) + Math.pow(WHITE.y - avgCb[min], 2));
+        int proxGreen = (int)Math.sqrt(Math.pow(GREEN.x - avgCr[min], 2) + Math.pow(GREEN.y - avgCb[min], 2));
+        int proxYellow = (int)Math.sqrt(Math.pow(YELLOW.x - avgCr[min], 2) + Math.pow(YELLOW.y - avgCb[min], 2));
+        int proxRed = (int)Math.sqrt(Math.pow(RED.x - avgCr[min], 2) + Math.pow(RED.y - avgCb[min], 2)) / 2;
+        int proxMagenta = (int)Math.sqrt(Math.pow(MAGENTA.x - avgCr[min], 2) + Math.pow(MAGENTA.y - avgCb[min], 2));
+        int proxBlue = (int)Math.sqrt(Math.pow(BLUE.x - avgCr[min], 2) + Math.pow(BLUE.y - avgCb[min], 2));
+        int proxCyan = (int)Math.sqrt(Math.pow(CYAN.x - avgCr[min], 2) + Math.pow(CYAN.y - avgCb[min], 2));
 
         int colorMin = Math.min(proxWhite, proxGreen);
         colorMin = Math.min(colorMin, proxYellow);

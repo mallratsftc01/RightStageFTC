@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import java.util.List;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -49,7 +50,7 @@ public class RightStage extends LinearOpMode {
     OpenCvWebcam webcam;
     ElementDeterminationPipeline pipeline;
     ElementDeterminationPipeline.ElementPosition snapshotAnalysis = ElementDeterminationPipeline.ElementPosition.LEFT; // default
-    ElementDeterminationPipeline.ElementColor snapshotTeam = ElementDeterminationPipeline.ElementColor.BLUE;
+    ElementDeterminationPipeline.ElementColor snapshotColor = ElementDeterminationPipeline.ElementColor.BLUE;
 
     private TouchSensor magnet;
 
@@ -89,6 +90,7 @@ public class RightStage extends LinearOpMode {
 
         scrollArm = new DrawerSlide(shoulder, extender, wrist, claw, magnet);
 
+        //init webcam for color detection
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         pipeline = new ElementDeterminationPipeline(0, 130, 260, 180, 165, 180, 30, 60);
@@ -97,33 +99,14 @@ public class RightStage extends LinearOpMode {
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
-            public void onOpened()
-            {
-                /*
-                 * Tell the webcam to start streamaxg images to us! Note that you must make sure
-                 * the resolution you specify is supported by the camera. If it is not, an exception
-                 * will be thrown.
-                 *
-                 * Keep in maxd that the SDK's UVC driver (what OpenCvWebcam uses under the hood) only
-                 * supports streamaxg from the webcam in the uncompressed YUV image format. This means
-                 * that the maximum resolution you can stream at and still get up to 30FPS is 480p (640x480).
-                 * Streamaxg at e.g. 720p will limit you to up to 10FPS and so on and so forth.
-                 *
-                 * Also, we specify the rotation that the webcam is used in. This is so that the image
-                 * from the camera sensor can be rotated such that it is always displayed with the image upright.
-                 * For a front facing camera, rotation is defined assumaxg the user is looking at the screen.
-                 * For a rear facing camera or a webcam, rotation is defined assumaxg the camera is facing
-                 * away from the user.
-                 */
+            public void onOpened() {
                 webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
-            public void onError(int errorCode)
-            {
-                /*
-                 * This will be called if the camera could not be opened
-                 */
+            public void onError(int errorCode) {
+                telemetry.addData("Error opening the webcam, error code ", errorCode);
+                telemetry.update();
             }
         });
 
@@ -149,11 +132,7 @@ public class RightStage extends LinearOpMode {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
-        //for (int ii = 0; ii < 20000; ii++) {if (cam.getPixelCheckStep() < 15000) {cam.pixelPosition(5000);}}
-        /*
-         * The INIT-loop:
-         * This REPLACES waitForStart!
-         */
+        //Init loop instead of wait for start
         while (!isStarted() && !isStopRequested())
         {
             if (pipeline.getPosition() != null) {
@@ -172,13 +151,13 @@ public class RightStage extends LinearOpMode {
          * to change as the camera view changes once the robot starts moving!
          */
         snapshotAnalysis = pipeline.getPosition();
-        snapshotTeam = pipeline.getColor();
+        snapshotColor = pipeline.getColor();
 
         /*
          * Show that snapshot on the telemetry
          */
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
-        telemetry.addData("Snapshot post-START color", snapshotTeam);
+        telemetry.addData("Snapshot post-START color", snapshotColor);
         telemetry.update();
 
         switch (snapshotAnalysis)
@@ -238,7 +217,6 @@ public class RightStage extends LinearOpMode {
     }
 
     private void initCamera() {
-        tfod = TfodProcessor.easyCreateWithDefaults();
 
         // Create the AprilTag processor.
         aprilTag = new AprilTagProcessor.Builder()
@@ -284,7 +262,6 @@ public class RightStage extends LinearOpMode {
 
         // Set and enable the processor.
         builder.addProcessor(aprilTag);
-        builder.addProcessor(tfod);
 
         // Build the Vision Portal, using the above settings.
         visionPortal = builder.build();
