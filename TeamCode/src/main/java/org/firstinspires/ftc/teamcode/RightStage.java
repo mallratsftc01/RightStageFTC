@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.epra.storage.IMUStorage;
-import com.epra.storage.SensorStorageMaster;
+import com.epra.*;
+import com.epra.storage.*;
+import com.epra.pipelines.*;
+import com.epra.location.*;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
