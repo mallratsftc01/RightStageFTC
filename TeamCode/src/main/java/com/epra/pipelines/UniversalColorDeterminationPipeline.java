@@ -208,29 +208,39 @@ public class UniversalColorDeterminationPipeline extends OpenCvPipeline {
             }
         }
 
-        //determines the closest color
-        int proxWhite = (int)Math.sqrt(Math.pow(WHITE.x - avgCr[min], 2) + Math.pow(WHITE.y - avgCb[min], 2));
-        int proxGreen = (int)Math.sqrt(Math.pow(GREEN.x - avgCr[min], 2) + Math.pow(GREEN.y - avgCb[min], 2));
-        int proxYellow = (int)Math.sqrt(Math.pow(YELLOW.x - avgCr[min], 2) + Math.pow(YELLOW.y - avgCb[min], 2));
-        int proxRed = (int)Math.sqrt(Math.pow(RED.x - avgCr[min], 2) + Math.pow(RED.y - avgCb[min], 2)) / 2;
-        int proxMagenta = (int)Math.sqrt(Math.pow(MAGENTA.x - avgCr[min], 2) + Math.pow(MAGENTA.y - avgCb[min], 2));
-        int proxBlue = (int)Math.sqrt(Math.pow(BLUE.x - avgCr[min], 2) + Math.pow(BLUE.y - avgCb[min], 2));
-        int proxCyan = (int)Math.sqrt(Math.pow(CYAN.x - avgCr[min], 2) + Math.pow(CYAN.y - avgCb[min], 2));
+        if (elementRegion > -1) {
+            //determines the closest color
+            int proxWhite = (int) Math.sqrt(Math.pow(WHITE.x - avgCr[elementRegion], 2) + Math.pow(WHITE.y - avgCb[elementRegion], 2));
+            int proxGreen = (int) Math.sqrt(Math.pow(GREEN.x - avgCr[elementRegion], 2) + Math.pow(GREEN.y - avgCb[elementRegion], 2));
+            int proxYellow = (int) Math.sqrt(Math.pow(YELLOW.x - avgCr[elementRegion], 2) + Math.pow(YELLOW.y - avgCb[elementRegion], 2));
+            int proxRed = (int) Math.sqrt(Math.pow(RED.x - avgCr[elementRegion], 2) + Math.pow(RED.y - avgCb[elementRegion], 2)) / 2;
+            int proxMagenta = (int) Math.sqrt(Math.pow(MAGENTA.x - avgCr[elementRegion], 2) + Math.pow(MAGENTA.y - avgCb[elementRegion], 2));
+            int proxBlue = (int) Math.sqrt(Math.pow(BLUE.x - avgCr[elementRegion], 2) + Math.pow(BLUE.y - avgCb[elementRegion], 2));
+            int proxCyan = (int) Math.sqrt(Math.pow(CYAN.x - avgCr[elementRegion], 2) + Math.pow(CYAN.y - avgCb[elementRegion], 2));
 
-        int colorMin = Math.min(proxWhite, proxGreen);
-        colorMin = Math.min(colorMin, proxYellow);
-        colorMin = Math.min(colorMin, proxRed);
-        colorMin = Math.min(colorMin, proxMagenta);
-        colorMin = Math.min(colorMin, proxBlue);
-        colorMin = Math.min(colorMin, proxCyan);
+            int colorMin = Math.min(proxWhite, proxGreen);
+            colorMin = Math.min(colorMin, proxYellow);
+            colorMin = Math.min(colorMin, proxRed);
+            colorMin = Math.min(colorMin, proxMagenta);
+            colorMin = Math.min(colorMin, proxBlue);
+            colorMin = Math.min(colorMin, proxCyan);
 
-        if (colorMin == proxWhite) {color = ElementColor.WHITE;}
-        else if (colorMin == proxGreen) {color = ElementColor.GREEN;}
-        else if (colorMin == proxYellow) {color = ElementColor.YELLOW;}
-        else if (colorMin == proxRed) {color = ElementColor.RED;}
-        else if (colorMin == proxMagenta) {color = ElementColor.MAGENTA;}
-        else if (colorMin == proxBlue) {color = ElementColor.BLUE;}
-        else if (colorMin == proxCyan) {color = ElementColor.CYAN;}
+            if (colorMin == proxWhite) {
+                color = ElementColor.WHITE;
+            } else if (colorMin == proxGreen) {
+                color = ElementColor.GREEN;
+            } else if (colorMin == proxYellow) {
+                color = ElementColor.YELLOW;
+            } else if (colorMin == proxRed) {
+                color = ElementColor.RED;
+            } else if (colorMin == proxMagenta) {
+                color = ElementColor.MAGENTA;
+            } else if (colorMin == proxBlue) {
+                color = ElementColor.BLUE;
+            } else if (colorMin == proxCyan) {
+                color = ElementColor.CYAN;
+            }
+        }
 
         /*
          * Render the 'input' buffer to the viewport. But note this is not

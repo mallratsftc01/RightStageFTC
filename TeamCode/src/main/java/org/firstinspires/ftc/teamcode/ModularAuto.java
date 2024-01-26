@@ -48,15 +48,16 @@ public class ModularAuto extends LinearOpMode {
         BLUE_FAR
     }
     public enum Step {
-        MOD_B_1 (0, 1000, 0),
-        MOD_B_2 (1, 1000, 0),
-        MOD_B_3 (2, 1000, 0),
-        MOD_B_4 (3, 1000, 0),
-        MOD_B_END (4, 0, 0),
-        MOD_C_1 (5, 0, 0),
-        MOD_D_1 (20, 0, 0),
-        MOD_E_1 (20, 0, 0),
-        MOD_F_END (30, 0, 0);
+        MOD_B_1 (0, 1100, 0),
+        MOD_B_2 (1, 550, 10000000),
+        MOD_B_3 (2, 0, 10000000),
+        MOD_B_4 (3, 0, 10000000),
+        MOD_B_5 (4, 550, 10000000),
+        MOD_B_END(5, 0, 1000000000),
+        MOD_C_1 (6, 0, 10000000),
+        MOD_D_1 (7, 0, 10000000),
+        MOD_E_1 (8, 0, 10000000),
+        MOD_F_END (9, 0, 10000000);
         int num, time, startBy;
         private Step (int num, int time, int startBy) {
             this.num = num;
@@ -98,7 +99,7 @@ public class ModularAuto extends LinearOpMode {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         ePipeline = new ElementDeterminationPipeline(0, 130, 260, 180, 165, 180, 30, 60);
-        cPipeline = new UniversalColorDeterminationPipeline(new int[] {0, 280}, new int [] {230, 230}, 10, 10, 128, 128, 32);
+        cPipeline = new UniversalColorDeterminationPipeline(new int[] {0, 290}, new int [] {30, 30}, 30, 30, 128, 128, 32);
         webcam.setPipeline(cPipeline);
         webcam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -119,16 +120,16 @@ public class ModularAuto extends LinearOpMode {
         //Module 1
         while (!isStarted() && !isStopRequested())
         {
-            /*webcam.setPipeline(ePipeline);
+            webcam.setPipeline(ePipeline);
             if (ePipeline.getPosition() != null) {
                 telemetry.addData("Realtime analysis", ePipeline.getPosition());
                 telemetry.addData("Realtime color", ePipeline.getColor());
-            }*/
-            webcam.setPipeline(cPipeline);
+            }
+            /*webcam.setPipeline(cPipeline);
             if (cPipeline.getColor() != null) {
                 telemetry.addData("Realtime region", cPipeline.getRegion());
-                telemetry.addData("Realtime color", ePipeline.getColor());
-            }
+                telemetry.addData("Realtime color", cPipeline.getColor());
+            }*/
             telemetry.update();
             // Don't burn CPU cycles busy-looping in this sample
             sleep(50);
@@ -136,8 +137,8 @@ public class ModularAuto extends LinearOpMode {
 
         snapshotAnalysis = ePipeline.getPosition();
         snapshotColor = ePipeline.getColor();
-        snapshotRegion = cPipeline.getRegion();
-        snapshotColorU = cPipeline.getColor();
+        snapshotRegion = 0;//cPipeline.getRegion();
+        snapshotColorU = UniversalColorDeterminationPipeline.ElementColor.WHITE;//cPipeline.getColor();
         if (snapshotColor == ElementDeterminationPipeline.ElementColor.RED) {
             startingLocation = (snapshotRegion == 0) ? StartingLocation.RED_NEAR : StartingLocation.RED_FAR;
         } else if (snapshotColor == ElementDeterminationPipeline.ElementColor.BLUE) {
@@ -157,27 +158,54 @@ public class ModularAuto extends LinearOpMode {
             switch (currentStep.num) {
                 //MODULE B
                 case 0:
-                    myDrive.setDrivePower(0, 0, 0, 0.75f);
+                    myDrive.setDrivePower(0, -0.75f, 0.25f, 0);
                     break;
                 case 1:
                     switch (snapshotAnalysis) {
                         case LEFT:
-                            myDrive.setDrivePower(0, 0, 0.25f, 0);
+                            myDrive.setDrivePower(0, 0, -0.5f, 0);
                             break;
                         case RIGHT:
-                            myDrive.setDrivePower(0, 0, -0.25f, 0);
+                            myDrive.setDrivePower(0, 0, 0.5f, 0);
                             break;
                         case CENTER:
                             myDrive.setDrivePower(0, 0, 0, 0);
+                            stepNext();
                             break;
                     }
                     break;
                 case 2:
-
+                    myDrive.setDrivePower(0, 0, 0, 0);
+                    //open claw
+                    break;
+                case 3:
+                    //close claw
+                    break;
+                case 4:
+                    switch (snapshotAnalysis) {
+                        case LEFT:
+                            myDrive.setDrivePower(0, 0, 0.5f, 0);
+                            break;
+                        case RIGHT:
+                            myDrive.setDrivePower(0, 0, -0.5f, 0);
+                            break;
+                        case CENTER:
+                            myDrive.setDrivePower(0, 0, 0, 0);
+                            stepNext();
+                            break;
+                    }
+                    break;
+                case 5:
+                    myDrive.setDrivePower(0, 0, 0, 0);
+                    break;
             }
             telemetry.addData("Starting Location: ", startingLocation);
             telemetry.addData("Step: ", currentStep);
             telemetry.update();
+            //breaks after last step
+            if (currentStep.num >= 5) {break;}
+            //breaks if all time is gone
+            if (runtime.milliseconds() >= 30000) {break;}
         }
     }
 
