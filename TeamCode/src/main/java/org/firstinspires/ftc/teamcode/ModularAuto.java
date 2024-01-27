@@ -54,10 +54,14 @@ public class ModularAuto extends LinearOpMode {
         MOD_B_4 (3, 500, 10000000),
         MOD_B_5 (4, 550, 10000000),
         MOD_B_END(5, 500, 1000000000),
-        MOD_C_1 (6, 500, 10000000),
-        MOD_D_1 (7, 500, 10000000),
-        MOD_E_1 (8, 500, 10000000),
-        MOD_F_END (9, 500, 10000000);
+        MOD_C_1 (6, 1500, 10000000),
+        MOD_C_2 (7, 1350, 10000000),
+        MOD_C_3 (8, 1150, 10000000),
+        MOD_D (9, 2000, 10000000),
+        MOD_C_END (10, 0, 10000000),
+        MOD_E_1 (11, 10000, 10000000),
+        MOD_E_2 (12, 10000, 10000000),
+        MOD_F_END (13, 500, 10000000);
         int num, time, startBy;
         private Step (int num, int time, int startBy) {
             this.num = num;
@@ -202,6 +206,25 @@ public class ModularAuto extends LinearOpMode {
                     break;
                 case 5:
                     myDrive.setDrivePower(0, 0, 0, 0);
+                    stepNext();
+                    break;
+                case 6:
+                    myDrive.setDrivePower(0, -0.75f, 0.25f, 0);
+                    break;
+                case 7:
+                    if (snapshotColor == ElementDeterminationPipeline.ElementColor.RED) {
+                        myDrive.setDrivePower(0, 0, 0.5f, 0);
+                    } else {
+                        myDrive.setDrivePower(0, 0, -0.5f, 0);
+                    }
+                    break;
+                case 8:
+                case 9:
+                    myDrive.setDrivePower(0, -0.75f, 0.25f, 0);
+                    break;
+                case 10:
+                    myDrive.setDrivePower(0, 0, 0, 0);
+                    stepNext();
                     break;
             }
             telemetry.addData("Starting Location: ", startingLocation);
@@ -210,7 +233,7 @@ public class ModularAuto extends LinearOpMode {
             telemetry.addData("next steps: ", nextSteps);
             telemetry.update();
             //breaks after last step
-            if (currentStep.num >= 5) {break;}
+            if (currentStep.num >= 1000) {break;}
             //breaks if all time is gone
             if (runtime.milliseconds() >= 30000) {break;}
         }
@@ -222,8 +245,7 @@ public class ModularAuto extends LinearOpMode {
         currentStep = nextStep;
         if (currentStep != Step.MOD_F_END) {
             nextStep = Step.values()[currentStep.num + 1];
-            nextStep = (nextStep == Step.MOD_C_1) ? ((startingLocation == StartingLocation.BLUE_FAR || startingLocation == StartingLocation.RED_FAR) ? Step.MOD_D_1 : Step.MOD_C_1) : nextStep;
-            nextStep = (nextStep == Step.MOD_D_1) ? ((startingLocation == StartingLocation.BLUE_NEAR || startingLocation == StartingLocation.RED_NEAR) ? Step.MOD_E_1 : Step.MOD_D_1) : nextStep;
+            nextStep = (nextStep == Step.MOD_D) ? ((startingLocation == StartingLocation.BLUE_NEAR || startingLocation == StartingLocation.RED_NEAR) ? Step.MOD_C_END : Step.MOD_D) : nextStep;
             return true;
         } else {
             return false;
