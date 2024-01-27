@@ -48,16 +48,16 @@ public class ModularAuto extends LinearOpMode {
         BLUE_FAR
     }
     public enum Step {
-        MOD_B_1 (0, 1100, 0),
+        MOD_B_1 (0, 1100, 1000000000),
         MOD_B_2 (1, 550, 10000000),
-        MOD_B_3 (2, 0, 10000000),
-        MOD_B_4 (3, 0, 10000000),
+        MOD_B_3 (2, 500, 10000000),
+        MOD_B_4 (3, 500, 10000000),
         MOD_B_5 (4, 550, 10000000),
-        MOD_B_END(5, 0, 1000000000),
-        MOD_C_1 (6, 0, 10000000),
-        MOD_D_1 (7, 0, 10000000),
-        MOD_E_1 (8, 0, 10000000),
-        MOD_F_END (9, 0, 10000000);
+        MOD_B_END(5, 500, 1000000000),
+        MOD_C_1 (6, 500, 10000000),
+        MOD_D_1 (7, 500, 10000000),
+        MOD_E_1 (8, 500, 10000000),
+        MOD_F_END (9, 500, 10000000);
         int num, time, startBy;
         private Step (int num, int time, int startBy) {
             this.num = num;
@@ -71,6 +71,7 @@ public class ModularAuto extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime steptime = new ElapsedTime();
+    int nextSteps = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -152,9 +153,11 @@ public class ModularAuto extends LinearOpMode {
         steptime.reset();
         while (opModeIsActive()) {
             //Time stepper system
-            if (steptime.milliseconds() >= currentStep.time || runtime.milliseconds() >= nextStep.startBy) {
+            if (steptime.milliseconds() >= currentStep.time) {
                 stepNext();
+                // || runtime.milliseconds() >= nextStep.startBy
             }
+            telemetry.addData("bwoken:", (nextStep.num != currentStep.num + 1));
             switch (currentStep.num) {
                 //MODULE B
                 case 0:
@@ -177,9 +180,11 @@ public class ModularAuto extends LinearOpMode {
                 case 2:
                     myDrive.setDrivePower(0, 0, 0, 0);
                     //open claw
+                    stepNext();
                     break;
                 case 3:
                     //close claw
+                    stepNext();
                     break;
                 case 4:
                     switch (snapshotAnalysis) {
@@ -201,6 +206,8 @@ public class ModularAuto extends LinearOpMode {
             }
             telemetry.addData("Starting Location: ", startingLocation);
             telemetry.addData("Step: ", currentStep);
+            telemetry.addData("Step num: ", currentStep.num);
+            telemetry.addData("next steps: ", nextSteps);
             telemetry.update();
             //breaks after last step
             if (currentStep.num >= 5) {break;}
@@ -210,12 +217,13 @@ public class ModularAuto extends LinearOpMode {
     }
 
     public boolean stepNext () {
+        nextSteps++;
         steptime.reset();
         currentStep = nextStep;
         if (currentStep != Step.MOD_F_END) {
             nextStep = Step.values()[currentStep.num + 1];
-            nextStep = (nextStep == Step.MOD_C_1 && (startingLocation == StartingLocation.BLUE_FAR || startingLocation == StartingLocation.RED_FAR)) ? Step.MOD_D_1 : Step.MOD_C_1;
-            nextStep = (nextStep == Step.MOD_D_1 && (startingLocation == StartingLocation.BLUE_NEAR || startingLocation == StartingLocation.RED_NEAR)) ? Step.MOD_E_1 : Step.MOD_D_1;
+            nextStep = (nextStep == Step.MOD_C_1) ? ((startingLocation == StartingLocation.BLUE_FAR || startingLocation == StartingLocation.RED_FAR) ? Step.MOD_D_1 : Step.MOD_C_1) : nextStep;
+            nextStep = (nextStep == Step.MOD_D_1) ? ((startingLocation == StartingLocation.BLUE_NEAR || startingLocation == StartingLocation.RED_NEAR) ? Step.MOD_E_1 : Step.MOD_D_1) : nextStep;
             return true;
         } else {
             return false;
