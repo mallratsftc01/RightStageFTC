@@ -52,6 +52,21 @@ public class AprilTagLocator {
     }
     /**Returns the age of the latest detection*/
     public int getAge () {return age;}
+    /**Returns true if any detected tag's id matches the parameterized id.*/
+    public boolean findTag (int tagID) {
+        if (updateDetections()) {
+            boolean b = false;
+            for (AprilTagDetection a : currentDetections) {
+                if (a.id == tagID) {
+                    b = true;
+                    break;
+                }
+            }
+            return b;
+        } else {
+            return false;
+        }
+    }
     /**Updates the location of the robot by using the AprilTagProcessor and IMUStorage only if the detections are fresh.
      * Returns true if the detections are fresh and false if they are not */
     public boolean updateLocation(IMUStorage imu) {
