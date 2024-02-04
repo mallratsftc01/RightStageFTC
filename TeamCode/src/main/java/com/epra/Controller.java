@@ -5,19 +5,24 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 //Queer coded - Zachy K
 public class Controller extends Gamepad {
     Gamepad gamepad = new Gamepad();
-    //int IDs of each button
-    public final static int A = 0;
-    public final static int B = 1;
-    public final static int X = 2;
-    public final static int Y = 3;
-    public final static int UP = 4;
-    public final static int DOWN = 5;
-    public final static int LEFT = 6;
-    public final static int RIGHT = 7;
-    public final static int BUMPER_LEFT = 8;
-    public final static int BUMPER_RIGHT = 9;
-    public final static int STICK_LEFT = 10;
-    public final static int STICK_RIGHT = 11;
+    public static enum Button {
+        A (0),
+        B (1),
+        X (2),
+        Y (3),
+        UP (4),
+        DOWN (5),
+        LEFT (6),
+        RIGHT (7),
+        BUMPER_LEFT (8),
+        BUMPER_RIGHT (9),
+        STICK_LEFT (10),
+        STICK_RIGHT (11);
+
+        int num;
+
+        private Button (int num) {this.num = num;}
+    }
     //array that stores the flag booleans for singlePress for each button
     private boolean[] flag = new boolean[12];
     //array that stores the value of toggle for each button
@@ -135,7 +140,7 @@ public class Controller extends Gamepad {
     public float right_trigger_deadband_pow(int power, int deadbandIn) {return (float)(((power % 2 == 0) ? Math.signum(right_trigger_deadband(deadbandIn)) : 1.0f) * Math.pow(right_trigger_deadband(deadbandIn), power));}
 
     /**Returns the state of the button.*/
-    public boolean buttonCase (int button) {
+    public boolean buttonCase (Button button) {
         boolean r = false;
         switch (button) {
             case A:
@@ -178,81 +183,81 @@ public class Controller extends Gamepad {
         return r;
     }
     /**Returns the output of buttonCase as an Integer*/
-    public int buttonCaseInt(int button) {return boolToInt(buttonCase(button));}
+    public int buttonCaseInt(Button button) {return boolToInt(buttonCase(button));}
     /**Returns a true output only on the first call while a button is pressed.
      * If the method is called again while the button is still pressed, the return will be false.
      * If the method is called while the button is released it will reset.*/
-    public boolean buttonSingle(int button) {
+    public boolean buttonSingle(Button button) {
         boolean r = false;
         if (buttonCase(button)) {
-            if (!flag[button]) {
+            if (!flag[button.num]) {
                 r = true;
-                flag[button] = true;
+                flag[button.num] = true;
             }
         } else {
-            flag[button] = false;
+            flag[button.num] = false;
         }
         return r;
     }
     /**Returns the output of buttonSingle as an Integer*/
-    public int buttonSingleInt(int button) {return boolToInt(buttonSingle(button));}
+    public int buttonSingleInt(Button button) {return boolToInt(buttonSingle(button));}
     /**Will change the state of the toggle if the button is pressed.
      * Returns the new state of the toggle.*/
-    public boolean buttonToggle(int button) {
+    public boolean buttonToggle(Button button) {
         if (buttonCase(button)) {
-            toggle[button] = !(toggle[button]);
+            toggle[button.num] = !(toggle[button.num]);
         }
-        return toggle[button];
+        return toggle[button.num];
     }
     /**Returns the output of buttonToggle as an Integer*/
-    public int buttonToggleInt(int button) {return boolToInt(buttonToggle(button));}
+    public int buttonToggleInt(Button button) {return boolToInt(buttonToggle(button));}
     /**Will change the state of the toggle if the button is pressed following the rules of buttonSingle.
      * Returns the new state of the toggle.*/
-    public boolean buttonToggleSingle(int button) {
+    public boolean buttonToggleSingle(Button button) {
         if (buttonSingle(button)) {
-            toggle[button] = !(toggle[button]);
+            toggle[button.num] = !(toggle[button.num]);
         }
-        return toggle[button];
+        return toggle[button.num];
     }
     /**Returns the output of buttonToggleSingle as an Integer*/
-    public int buttonToggleSingleInt(int button) {return boolToInt(buttonToggleSingle(button));}
+    public int buttonToggleSingleInt(Button button) {return boolToInt(buttonToggleSingle(button));}
     /**Will change the state of the toggle regardless of the state of the button.
      * Returns the new state of the toggle.*/
-    public boolean flipToggle(int button) {
-        toggle[button] = !(toggle[button]);
-        return toggle[button];
+    public boolean flipToggle(Button button) {
+        toggle[button.num] = !(toggle[button.num]);
+        return toggle[button.num];
     }
     /**Returns the state of the toggle without changing the state of the toggle.*/
-    public boolean getToggle(int button) {
-        return toggle[button];
+    public boolean getToggle(Button button) {
+        return toggle[button.num];
     }
     /**Returns the output of getToggle as an Integer*/
-    public int getToggleInt(int button) {return boolToInt(buttonToggleSingle(button));}
+    public int getToggleInt(Button button) {return boolToInt(buttonToggleSingle(button));}
     /**If the counter is more than or equal to max it will be reset and return zero. If not, the counter will increase by one and return the result.*/
-    public int buttonCounter(int button, int max) {
+    public int buttonCounter(Button button, int max) {
         if (buttonCase(button)) {
-            counter[button] = (counter[button] + 1) % max;
+            counter[button.num] = (counter[button.num + 1]) % max;
         }
-        return counter[button];
+        return counter[button.num];
     }
     /**Will perform the same action as buttonCounter but follows the rules of buttonSingle.*/
-    public int buttonCounterSingle(int button, int max) {
+    public int buttonCounterSingle(Button button, int max) {
         if (buttonSingle(button)) {
-            counter[button] = (counter[button] + 1) % max;
+            counter[button.num] = (counter[button.num] + 1) % max;
         }
-        return counter[button];
+        return counter[button.num];
     }
     /**Will increase the counter of a certain button by a certain amount. If the counter goes over max, it will reset and overflow. Returns the new value of the counter.*/
-    public int increaseCounter(int button, int max, int increase) {
-        counter[button] = (counter[button] + increase + max) % max;
-        return counter[button];
+    public int increaseCounter(Button button, int max, int increase) {
+        counter[button.num] = (counter[button.num] + increase + max) % max;
+        return counter[button.num];
     }
     /**Will set the counter to a certain number.*/
-    public void setCounter(int button, int set) {
-        counter[button] = set;
+    public void setCounter(Button button, int set) {
+        counter[button.num] = set;
     }
     /**Returns the current value of the counter*/
-    public int getCounter(int button) {return counter[button];}
+    public int getCounter(Button button) {return counter[button.num];}
 
     /**If true will return 1, if false will return 0.*/
     public int boolToInt(boolean b) {return (b) ? 1 : 0;}

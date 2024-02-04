@@ -41,6 +41,7 @@ public class RightStage extends LinearOpMode {
     private DcMotorEx extender;
     Servo claw;
     Servo wrist;
+    Servo plane;
     DrawerSlide scrollArm;
     private Controller controller1;
     private Controller controller2;
@@ -84,6 +85,7 @@ public class RightStage extends LinearOpMode {
 
         claw = hardwareMap.get(Servo.class, "clawServo");
         wrist = hardwareMap.get(Servo.class, "wristServo");
+        plane = hardwareMap.get(Servo.class, "planeServo");
 
         controller1 = new Controller (gamepad1, 0.05F);
         controller2 = new Controller (gamepad2, 0.05F);
@@ -133,55 +135,7 @@ public class RightStage extends LinearOpMode {
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-
-        //Init loop instead of wait for start
-        while (!isStarted() && !isStopRequested())
-        {
-            if (pipeline.getPosition() != null) {
-                telemetry.addData("Realtime analysis", pipeline.getPosition());
-                telemetry.addData("Realtime color", pipeline.getColor());
-                telemetry.update();
-            }
-
-            // Don't burn CPU cycles busy-looping in this sample
-            sleep(50);
-        }
-
-        /*
-         * The START command just came in: snapshot the current analysis now
-         * for later use. We must do this because the analysis will continue
-         * to change as the camera view changes once the robot starts moving!
-         */
-        snapshotAnalysis = pipeline.getPosition();
-        snapshotColor = pipeline.getColor();
-
-        /*
-         * Show that snapshot on the telemetry
-         */
-        telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
-        telemetry.addData("Snapshot post-START color", snapshotColor);
-        telemetry.update();
-
-        switch (snapshotAnalysis)
-        {
-            case LEFT:
-            {
-                /* Your autonomous code */
-                break;
-            }
-
-            case RIGHT:
-            {
-                /* Your autonomous code */
-                break;
-            }
-
-            case CENTER:
-            {
-                /* Your autonomous code*/
-                break;
-            }
-        }
+        waitForStart();
         startTime = System.currentTimeMillis() - 1000;
         while (opModeIsActive()) {
             for (LynxModule module : allHubs) {
@@ -205,13 +159,17 @@ public class RightStage extends LinearOpMode {
             telemetry.addData("Shoulder pos: ", shoulder.getCurrentPosition());
             telemetry.addData("Shoulder velo: ", shoulder.getVelocity());
 
+            plane.setPosition((controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y)) ? -1.0 : 1.0);
+            telemetry.addData("Ys pressed: ", controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y));
+            telemetry.addData("plane: ", plane.getPosition());
+
             //Drive Controls
             float slow = 1 - (controller1.left_trigger_deadband() * 0.5f);
             //dpad drive
-            if (controller1.buttonCase(Controller.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
-            else if (controller1.buttonCase(Controller.UP)) {myDrive.setDrivePower(0, -0.5f * slow, 0, 0);}
-            else if (controller1.buttonCase(Controller.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
-            else if (controller1.buttonCase(Controller.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
+            if (controller1.buttonCase(Controller.Button.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
+            else if (controller1.buttonCase(Controller.Button.UP)) {myDrive.setDrivePower(0, -0.5f * slow, 0, 0);}
+            else if (controller1.buttonCase(Controller.Button.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
+            else if (controller1.buttonCase(Controller.Button.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
             //default to normal drive
             else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
             telemetry.update();
