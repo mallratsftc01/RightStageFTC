@@ -151,10 +151,10 @@ public class RightStage extends LinearOpMode {
             telemetry.addData("Times Looped", ++timesRun);
             telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
             //arm controls
-            scrollArm.moveShoulder(0.5 * controller2.left_stick_y_deadband());
+            scrollArm.moveShoulder(0.5 * controller2.analogDeadband(Controller.Button.LEFT_STICK_Y));
             telemetry.addData("magnet: ", magnet.getValue());
             claw.setPosition((controller2.a) ? 1.0 : 0);
-            scrollArm.moveExtendMagnet(controller2.right_stick_y_deadband(), -0.5*controller2.right_stick_y_deadband());
+            scrollArm.moveExtendMagnet(controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y), -0.5*controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y));
             telemetry.addData("Extend pos: ", extender.getCurrentPosition());
             telemetry.addData("Shoulder pos: ", shoulder.getCurrentPosition());
             telemetry.addData("Shoulder velo: ", shoulder.getVelocity());
@@ -163,15 +163,15 @@ public class RightStage extends LinearOpMode {
             telemetry.addData("Ys pressed: ", controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y));
             telemetry.addData("plane: ", plane.getPosition());
 
-            //Drive Controls
-            float slow = 1 - (controller1.left_trigger_deadband() * 0.5f);
+            //Drive Control
+            float slow = 1 - (controller1.analogDeadband(Controller.Button.LEFT_TRIGGER) * 0.5f);
             //dpad drive
             if (controller1.buttonCase(Controller.Button.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
             else if (controller1.buttonCase(Controller.Button.UP)) {myDrive.setDrivePower(0, -0.5f * slow, 0, 0);}
             else if (controller1.buttonCase(Controller.Button.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.Button.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
             //default to normal drive
-            else {myDrive.setDrivePower(controller1.right_stick_y_deadband() * slow, controller1.left_stick_y_deadband() * slow, controller1.right_stick_x_deadband() * slow, controller1.left_stick_x_deadband() * slow);}
+            else {myDrive.setDrivePower(controller1.analogDeadband(Controller.Button.RIGHT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.RIGHT_STICK_X) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_X) * slow);}
             telemetry.update();
         }
     }

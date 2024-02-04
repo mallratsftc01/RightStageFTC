@@ -17,10 +17,15 @@ public class Controller extends Gamepad {
         BUMPER_LEFT (8),
         BUMPER_RIGHT (9),
         STICK_LEFT (10),
-        STICK_RIGHT (11);
+        STICK_RIGHT (11),
+        LEFT_STICK_X (12),
+        RIGHT_STICK_X (13),
+        LEFT_STICK_Y (14),
+        RIGHT_STICK_Y (15),
+        LEFT_TRIGGER (16),
+        RIGHT_TRIGGER (17);
 
         int num;
-
         private Button (int num) {this.num = num;}
     }
     //array that stores the flag booleans for singlePress for each button
@@ -66,78 +71,41 @@ public class Controller extends Gamepad {
     public void setDeadband(float d) {deadband = d;}
     /**Returns deadband limit for joysticks and triggers.*/
     public float getDeadband() {return deadband;}
-
-    public float left_stick_x() {return gamepad.left_stick_x;}
-    public float left_stick_y() {return gamepad.left_stick_y;}
-    public float right_stick_x() {return gamepad.right_stick_x;}
-    public float right_stick_y() {return gamepad.right_stick_y;}
-    public float left_trigger() {return gamepad.left_trigger;}
-    public float right_trigger() {return gamepad.right_trigger;}
-
+    /**Returns the value of the analog control.*/
+    public float analogCase (Button analog) {
+        float r = 0;
+        switch (analog) {
+            case LEFT_STICK_X:
+                r = gamepad.left_stick_x;
+                break;
+            case RIGHT_STICK_X:
+                r = gamepad.right_stick_x;
+                break;
+            case LEFT_STICK_Y:
+                r = gamepad.left_stick_y;
+                break;
+            case RIGHT_STICK_Y:
+                r = gamepad.right_stick_y;
+                break;
+            case LEFT_TRIGGER:
+                r = gamepad.left_trigger;
+                break;
+            case RIGHT_TRIGGER:
+                r = gamepad.right_trigger;
+                break;
+        }
+        return r;
+    }
     /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float left_stick_x_deadband() {return (gamepad.left_stick_x > deadband || gamepad.left_stick_x < -1.0 * deadband) ? gamepad.left_stick_x : 0.0F;}
+    public float analogDeadband (Button analog) {return (Math.abs(analogCase(analog)) > deadband) ? analogCase(analog) : 0.0F;}
     /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float left_stick_y_deadband() {return (gamepad.left_stick_y > deadband || gamepad.left_stick_y < -1.0 * deadband) ? gamepad.left_stick_y : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float right_stick_x_deadband() {return (gamepad.right_stick_x > deadband || gamepad.right_stick_x < -1.0 * deadband) ? gamepad.right_stick_x : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float right_stick_y_deadband() {return (gamepad.right_stick_y > deadband || gamepad.right_stick_y < -1.0 * deadband) ? gamepad.right_stick_y : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float left_trigger_deadband() {return (gamepad.left_trigger > deadband || gamepad.left_trigger < -1.0 * deadband) ? gamepad.left_trigger : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float right_trigger_deadband() {return (gamepad.right_trigger > deadband || gamepad.right_trigger < -1.0 * deadband) ? gamepad.right_trigger : 0.0F;}
-
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float left_stick_x_deadband(int deadbandIn) {return (gamepad.left_stick_x > deadbandIn || gamepad.left_stick_x < -1.0 * deadbandIn) ? gamepad.left_stick_x : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float left_stick_y_deadband(int deadbandIn) {return (gamepad.left_stick_y > deadbandIn || gamepad.left_stick_y < -1.0 * deadbandIn) ? gamepad.left_stick_y : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float right_stick_x_deadband(int deadbandIn) {return (gamepad.right_stick_x > deadbandIn || gamepad.right_stick_x < -1.0 * deadbandIn) ? gamepad.right_stick_x : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float right_stick_y_deadband(int deadbandIn) {return (gamepad.right_stick_y > deadbandIn || gamepad.right_stick_y < -1.0 * deadbandIn) ? gamepad.right_stick_y : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float left_trigger_deadband(int deadbandIn) {return (gamepad.left_trigger > deadbandIn || gamepad.left_trigger < -1.0 * deadbandIn) ? gamepad.left_trigger : 0.0F;}
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
-    public float right_trigger_deadband(int deadbandIn) {return (gamepad.right_trigger > deadbandIn || gamepad.right_trigger < -1.0 * deadbandIn) ? gamepad.right_trigger : 0.0F;}
-
+    public float analogDeadband (Button analog, float deadbandIn) {return (Math.abs(analogCase(analog)) > deadbandIn) ? analogCase(analog) : 0.0F;}
     /**Returns the value raised to the power of the input.*/
-    public float left_stick_x_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(left_stick_x()) : 1.0f) * Math.pow(left_stick_x(), power));}
-    /**Returns the value raised to the power of the input.*/
-    public float left_stick_y_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(left_stick_y()) : 1.0f) * Math.pow(left_stick_y(), power));}
-    /**Returns the value raised to the power of the input.*/
-    public float right_stick_x_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(right_stick_x()) : 1.0f) * Math.pow(right_stick_x(), power));}
-    /**Returns the value raised to the power of the input.*/
-    public float right_stick_y_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(right_stick_y()) : 1.0f) * Math.pow(right_stick_y(), power));}
-    /**Returns the value raised to the power of the input.*/
-    public float left_trigger_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(left_trigger()) : 1.0f) * Math.pow(left_trigger(), power));}
-    /**Returns the value raised to the power of the input.*/
-    public float right_trigger_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(right_trigger()) : 1.0f) * Math.pow(right_trigger(), power));}
-
+    public float analogPower(Button analog, int power) {return Math.signum(analogCase(analog) * (float)Math.pow(Math.abs(analogCase(analog)), power));}
     /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float left_stick_x_deadband_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(left_stick_x_deadband()) : 1.0f) * Math.pow(left_stick_x_deadband(), power));}
+    public float analogPowerDeadband(Button analog, int power) {return (Math.abs(analogPower(analog, power)) > deadband) ? analogPower(analog, power) : 0.0F;}
     /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float left_stick_y_deadband_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(left_stick_y_deadband()) : 1.0f) * Math.pow(left_stick_y_deadband(), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float right_stick_x_deadband_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(right_stick_x_deadband()) : 1.0f) * Math.pow(right_stick_x_deadband(), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float right_stick_y_deadband_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(right_stick_y_deadband()) : 1.0f) * Math.pow(right_stick_y_deadband(), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float left_trigger_deadband_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(left_trigger_deadband()) : 1.0f) * Math.pow(left_trigger_deadband(), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float right_trigger_deadband_pow(int power) {return (float)(((power % 2 == 0) ? Math.signum(right_trigger_deadband()) : 1.0f) * Math.pow(right_trigger_deadband(), power));}
-
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float left_stick_x_deadband_pow(int power, int deadbandIn) {return (float)(((power % 2 == 0) ? Math.signum(left_stick_x_deadband(deadbandIn)) : 1.0f) * Math.pow(left_stick_x_deadband(deadbandIn), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float left_stick_y_deadband_pow(int power, int deadbandIn) {return (float)(((power % 2 == 0) ? Math.signum(left_stick_y_deadband(deadbandIn)) : 1.0f) * Math.pow(left_stick_y_deadband(deadbandIn), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float right_stick_x_deadband_pow(int power, int deadbandIn) {return (float)(((power % 2 == 0) ? Math.signum(right_stick_x_deadband(deadbandIn)) : 1.0f) * Math.pow(right_stick_x_deadband(deadbandIn), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float right_stick_y_deadband_pow(int power, int deadbandIn) {return (float)(((power % 2 == 0) ? Math.signum(right_stick_y_deadband(deadbandIn)) : 1.0f) * Math.pow(right_stick_y_deadband(deadbandIn), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float left_trigger_deadband_pow(int power, int deadbandIn) {return (float)(((power % 2 == 0) ? Math.signum(left_trigger_deadband(deadbandIn)) : 1.0f) * Math.pow(left_trigger_deadband(deadbandIn), power));}
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
-    public float right_trigger_deadband_pow(int power, int deadbandIn) {return (float)(((power % 2 == 0) ? Math.signum(right_trigger_deadband(deadbandIn)) : 1.0f) * Math.pow(right_trigger_deadband(deadbandIn), power));}
+    public float analogPowerDeadband(Button analog, int power, int deadbandIn) {return (Math.abs(analogPower(analog, power)) > deadbandIn) ? analogPower(analog, power) : 0.0F;}
 
     /**Returns the state of the button.*/
     public boolean buttonCase (Button button) {
