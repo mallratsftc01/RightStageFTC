@@ -8,6 +8,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -33,15 +34,20 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 @TeleOp
 public class RightStage extends LinearOpMode {
+    private static final int CR = 240;
+    private static final int CB = 0;
+    private static final int TOLERANCE = 40;
     private DcMotorEx northEastMotor;
     private DcMotorEx southEastMotor;
     private DcMotorEx southWestMotor;
     private DcMotorEx northWestMotor;
     private DcMotorEx shoulder;
     private DcMotorEx extender;
-    Servo claw;
+    private DcMotorEx encoder;
+    CRServo claw;
     Servo wrist;
-    Servo plane;
+    int clawFlag = 0;
+    CRServo plane;
     DrawerSlide scrollArm;
     private Controller controller1;
     private Controller controller2;
@@ -51,9 +57,9 @@ public class RightStage extends LinearOpMode {
     private VisionPortal visionPortal;
 
     OpenCvWebcam webcam;
-    ElementDeterminationPipeline pipeline;
-    ElementDeterminationPipeline.ElementPosition snapshotAnalysis = ElementDeterminationPipeline.ElementPosition.LEFT; // default
-    ElementDeterminationPipeline.ElementColor snapshotColor = ElementDeterminationPipeline.ElementColor.BLUE;
+    UniversalColorDeterminationPipeline pipeline;
+    int elementPos = 2;
+    UniversalColorDeterminationPipeline.ElementColor snapshotColor = UniversalColorDeterminationPipeline.ElementColor.BLUE;
 
     private TouchSensor magnet;
 
@@ -80,24 +86,26 @@ public class RightStage extends LinearOpMode {
 
         shoulder = hardwareMap.get(DcMotorEx.class, "lift");
         extender = hardwareMap.get(DcMotorEx.class, "length");
+        encoder = hardwareMap.get(DcMotorEx.class, "measure");
         shoulder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        encoder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shoulder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        claw = hardwareMap.get(Servo.class, "clawServo");
+        claw = hardwareMap.get(CRServo.class, "clawServo");
         wrist = hardwareMap.get(Servo.class, "wristServo");
-        plane = hardwareMap.get(Servo.class, "planeServo");
+        plane = hardwareMap.get(CRServo.class, "drone");
 
         controller1 = new Controller (gamepad1, 0.05F);
         controller2 = new Controller (gamepad2, 0.05F);
 
         magnet = hardwareMap.get(TouchSensor.class, "magneto");
 
-        scrollArm = new DrawerSlide(shoulder, extender, wrist, claw, magnet);
+        scrollArm = new DrawerSlide(shoulder, extender, encoder, wrist, claw, magnet);
 
         //init webcam for color detection
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        pipeline = new ElementDeterminationPipeline(0, 130, 260, 180, 165, 180, 30, 60);
+        pipeline = new UniversalColorDeterminationPipeline(new int[] {80, 200}, new int[] {100, 120}, 20, 20, CR, CB, TOLERANCE);
         webcam.setPipeline(pipeline);
         webcam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -151,17 +159,45 @@ public class RightStage extends LinearOpMode {
             telemetry.addData("Times Looped", ++timesRun);
             telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
             //arm controls
-            scrollArm.moveShoulder(0.5 * controller2.analogDeadband(Controller.Button.LEFT_STICK_Y));
-            telemetry.addData("magnet: ", magnet.getValue());
-            claw.setPosition((controller2.a) ? 1.0 : 0);
-            scrollArm.moveExtendMagnet(controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y), -0.5*controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y));
+            double shoulderPow = 0.0;
+            /*switch (controller2.buttonCounterSingle(Controller.Button.B, 2)) {
+                case 0:
+                    shoulderPow = scrollArm.targetShoulderDegree(120.0);
+                    break;
+                case 1:
+                    shoulderPow = scrollArm.targetShoulderDegree(185.0);
+                    break;
+            }
+            shoulderPow *= (controller2.buttonCase(Controller.Button.X)) ? 0.0 : -1.0;*/
+            telemetry.addData("pow: ", shoulderPow);
+            telemetry.addData("degree: ", scrollArm.getShoulderDegree());
+            shoulderPow = controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y) * 0.5;
+            scrollArm.moveShoulder(shoulderPow);
+            //scrollArm.moveShoulder(controller2.analogDeadband(Controller.Button.LEFT_STICK_Y) * 0.5);
+            //scrollArm.moveExtend(0.5 * controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y));
+
+            if (controller2.buttonCase(Controller.Button.BUMPER_LEFT)) {
+                if (clawFlag < 16) {
+                    clawFlag++;
+                    claw.setPower(-1);
+                } else {claw.setPower(0);}
+            } else {
+                clawFlag = 0;
+                claw.setPower(controller2.analogDeadband(Controller.Button.LEFT_TRIGGER) - controller2.analogDeadband(Controller.Button.RIGHT_TRIGGER));
+            }
+            wrist.setPosition((controller2.buttonToggleSingle(Controller.Button.BUMPER_RIGHT)) ? 1 : -1);
+            /*if (myDrive.getAverageVelocity() < 300 || controller2.buttonToggleSingle(Controller.Button.A)) {);
+            } else {wrist.setPosition(-1);}*/
+
+            //scrollArm.moveExtendMagnet(controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y), -0.5*controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y));
             telemetry.addData("Extend pos: ", extender.getCurrentPosition());
-            telemetry.addData("Shoulder pos: ", shoulder.getCurrentPosition());
+            telemetry.addData("Shoulder pos: ", scrollArm.getShoulderDist());
             telemetry.addData("Shoulder velo: ", shoulder.getVelocity());
 
-            plane.setPosition((controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y)) ? -1.0 : 1.0);
+            plane.setPower((controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y)) ? -1.0 : 0);
+            telemetry.addData("Plane connection: ", plane.getConnectionInfo());
             telemetry.addData("Ys pressed: ", controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y));
-            telemetry.addData("plane: ", plane.getPosition());
+            telemetry.addData("plane: ", plane.getPower());
 
             //Drive Control
             float slow = 1 - (controller1.analogDeadband(Controller.Button.LEFT_TRIGGER) * 0.5f);

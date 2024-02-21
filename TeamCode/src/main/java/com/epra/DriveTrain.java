@@ -371,6 +371,15 @@ public class DriveTrain {
         }
     }
 
+    public double getAverageVelocity () {
+        double r = 0.0;
+        if (driveType == 3) {
+            r = Math.abs(rightMotorF.getVelocity()) + Math.abs(rightMotorB.getVelocity()) + Math.abs(leftMotorF.getVelocity()) + Math.abs(leftMotorB.getVelocity());
+            r /= 4.0;
+        }
+        return r;
+    }
+
     public int soggyWafflesScheduler (boolean upPressed, boolean downPressed, boolean rightPressed, boolean leftPressed, boolean taskCompleteIn) {
         //Moves the schedule down
         if (!completed) {

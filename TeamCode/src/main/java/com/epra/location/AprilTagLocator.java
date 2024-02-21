@@ -56,13 +56,17 @@ public class AprilTagLocator {
     public boolean findTag (int tagID) {
         if (updateDetections()) {
             boolean b = false;
-            for (AprilTagDetection a : currentDetections) {
-                if (a.id == tagID) {
-                    b = true;
-                    break;
+            if (currentDetections != null) {
+                for (AprilTagDetection a : currentDetections) {
+                    if (a.id == tagID) {
+                        b = true;
+                        break;
+                    }
                 }
+                return b;
+            } else {
+                return false;
             }
-            return b;
         } else {
             return false;
         }
