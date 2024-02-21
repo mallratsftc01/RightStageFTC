@@ -4,6 +4,7 @@ import com.epra.storage.IMUStorage;
 import com.epra.IMUExpanded;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
@@ -73,7 +74,7 @@ public class AprilTagLocator {
     }
     /**Updates the location of the robot by using the AprilTagProcessor and IMUStorage only if the detections are fresh.
      * Returns true if the detections are fresh and false if they are not */
-    public boolean updateLocation(IMUStorage imu) {
+    public boolean updateLocation(YawPitchRollAngles[] orientation, IMUExpanded imu) {
         if (updateDetections()) {
             FieldPoint p;
             location.x = 0.0f;
@@ -81,7 +82,7 @@ public class AprilTagLocator {
             for (int ii = 0; ii < currentDetections.size(); ii++) {
                 p = ID[currentDetections.get(ii).id];
                 double hyp = Math.sqrt(Math.pow(currentDetections.get(ii).ftcPose.x, 2) + Math.pow(currentDetections.get(ii).ftcPose.y, 2));
-                double rot = (imu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES) % 90) - currentDetections.get(ii).ftcPose.yaw;
+                double rot = (imu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES) % 90) - currentDetections.get(ii).ftcPose.yaw;
                 p.y += Math.signum(p.y * -1) * Math.abs(Math.cos(rot) * hyp);
                 p.x += (Math.signum(currentDetections.get(ii).ftcPose.x) * ((currentDetections.get(ii).id < 7) ? -1 : 1) * Math.abs(Math.sin(rot) * hyp));
                 location.x += p.x;
@@ -95,8 +96,8 @@ public class AprilTagLocator {
         }
     }
     /**Updates the location and returns the latest location in FieldPoint form*/
-    public FieldPoint getLocation (IMUStorage imu) {
-        updateLocation(imu);
+    public FieldPoint getLocation (YawPitchRollAngles[] orientation, IMUExpanded imu) {
+        updateLocation(orientation, imu);
         return location;
     }
 
