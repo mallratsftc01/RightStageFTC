@@ -38,43 +38,39 @@ public class IMUExpanded{
     }
 
     /**Returns an array of all YawPitchRoll orientation objects for every IMU.*/
-    public YawPitchRollAngles[] getOrientation() {
-        YawPitchRollAngles[] o = new YawPitchRollAngles[imus.size()];
-        for (int ii = 0; ii < imus.size(); ii++) {
-            o[ii] = imus.get(ii).getRobotYawPitchRollAngles();
-        }
-        return o;
+    public YawPitchRollAngles getOrientation(int index) {
+        if (index < imus.size()) {return imus.get(index).getRobotYawPitchRollAngles();}
+        else {return null;}
     }
 
     /**Returns the average orientation of the IMU(s).*/
-    public double avgIMU(int axis, AngleUnit angleUnit) {
+    public double avgIMU(YawPitchRollAngles[] orientation, int axis, AngleUnit angleUnit) {
         double r = 0;
-        YawPitchRollAngles o[] = getOrientation();
-        for (int ii = 0; ii < o.length; ii++) {
+        for (int ii = 0; ii < orientation.length; ii++) {
             switch (axis) {
                 case 0:
-                    r += o[ii].getYaw(angleUnit);
+                    r += orientation[ii].getYaw(angleUnit);
                     break;
                 case 1:
-                    r += o[ii].getPitch(angleUnit);
+                    r += orientation[ii].getPitch(angleUnit);
                     break;
                 case 2:
-                    r += o[ii].getRoll(angleUnit);
+                    r += orientation[ii].getRoll(angleUnit);
                     break;
             }
         }
         return r / imus.size();
     }
     /**Returns the distance between the current orientation of the IMU(s) and the target. Do not use, always use trueDistIMU.*/
-    public double distIMU(int axis, AngleUnit angleUnit, double target) {return target - avgIMU(axis, angleUnit);}
+    public double distIMU(YawPitchRollAngles[] orientation, int axis, AngleUnit angleUnit, double target) {return target - avgIMU(orientation, axis, angleUnit);}
     /**Returns the true distance between the orientation of the IMU(s) and the target, including looping from 360 to 1.*/
-    public double trueDistIMU(int axis, AngleUnit angleUnit, double target) {
-        double current = avgIMU(axis, angleUnit);
+    public double trueDistIMU(YawPitchRollAngles[] orientation, int axis, AngleUnit angleUnit, double target) {
+        double current = avgIMU(orientation, axis, angleUnit);
         double newTarget = target;
         if (Math.min(target, current) == target) {newTarget += 360;}
         else {current += 360;}
-        double dist1 = Math.abs(distIMU(axis,angleUnit, target));
-        double r =(Math.min(dist1, Math.abs((newTarget - current))) == dist1) ? distIMU(axis,angleUnit, target) : (newTarget - current);
+        double dist1 = Math.abs(distIMU(orientation, axis,angleUnit, target));
+        double r =(Math.min(dist1, Math.abs((newTarget - current))) == dist1) ? distIMU(orientation, axis,angleUnit, target) : (newTarget - current);
         return (Math.abs(r) - 180) * Math.signum(r) * -1.0;
     }
 }
