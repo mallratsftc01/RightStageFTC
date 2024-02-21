@@ -2,6 +2,8 @@ package com.epra;
 
 import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+
 import java.util.ArrayList;
 
 public class IMUExpanded{
@@ -35,24 +37,32 @@ public class IMUExpanded{
         for (IMU e : imu) {imus.add(e);}
     }
 
+    /**Returns an array of all YawPitchRoll orientation objects for every IMU.*/
+    public YawPitchRollAngles[] getOrientation() {
+        YawPitchRollAngles[] o = new YawPitchRollAngles[imus.size()];
+        for (int ii = 0; ii < imus.size(); ii++) {
+            o[ii] = imus.get(ii).getRobotYawPitchRollAngles();
+        }
+        return o;
+    }
+
     /**Returns the average orientation of the IMU(s).*/
     public double avgIMU(int axis, AngleUnit angleUnit) {
         double r = 0;
-        /*
-        for (int ii = 0; ii < imus.size(); ii++) {
+        YawPitchRollAngles o[] = getOrientation();
+        for (int ii = 0; ii < o.length; ii++) {
             switch (axis) {
                 case 0:
-                    r += imus.get(ii).getRobotYawPitchRollAngles().getYaw(angleUnit);
+                    r += o[ii].getYaw(angleUnit);
                     break;
                 case 1:
-                    r += imus.get(ii).getRobotYawPitchRollAngles().getPitch(angleUnit);
+                    r += o[ii].getPitch(angleUnit);
                     break;
                 case 2:
-                    r += imus.get(ii).getRobotYawPitchRollAngles().getRoll(angleUnit);
+                    r += o[ii].getRoll(angleUnit);
                     break;
             }
-        }*/
-        r = imus.get(0).getRobotYawPitchRollAngles().getYaw(angleUnit);
+        }
         return r / imus.size();
     }
     /**Returns the distance between the current orientation of the IMU(s) and the target. Do not use, always use trueDistIMU.*/
