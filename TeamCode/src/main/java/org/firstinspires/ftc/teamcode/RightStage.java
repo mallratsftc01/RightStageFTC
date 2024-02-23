@@ -71,7 +71,7 @@ public class RightStage extends LinearOpMode {
     private IMUStorage emuStorage;
     private LocationServices gps;
 
-    SensorStorageMaster storageMaster;
+    //SensorStorageMaster storageMaster;
     List<LynxModule> allHubs;
 
     long startTime;
@@ -127,21 +127,22 @@ public class RightStage extends LinearOpMode {
         //initCamera();
         //CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
 
-        IMU.Parameters perry = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
         emu1 = hardwareMap.get(IMU.class, "imu 1");
         emu2 = hardwareMap.get(IMU.class, "imu 2");
-        emu1.initialize(perry);
-        emu2.initialize(perry);
+        emu1.initialize(new IMU.Parameters(orientationOnRobot));
+        emu2.initialize(new IMU.Parameters(orientationOnRobot));
         emu = new IMUExpanded(emu1, emu2);
         orientation = new YawPitchRollAngles[2];
         for (int ii = 0; ii < orientation.length; ii++) {orientation[ii] = emu.getOrientation(ii);}
 
         DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
 
-        storageMaster = new SensorStorageMaster(new DcMotorEx[]{northEastMotor, northWestMotor, southEastMotor, southWestMotor, shoulder, extender}, new TouchSensor[]{magnet}, emu);
+        //storageMaster = new SensorStorageMaster(new DcMotorEx[]{northEastMotor, northWestMotor, southEastMotor, southWestMotor, shoulder, extender}, new TouchSensor[]{magnet}, emu);
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule module : allHubs) {
@@ -153,9 +154,11 @@ public class RightStage extends LinearOpMode {
             for (LynxModule module : allHubs) {
                 module.clearBulkCache();
             }
-            storageMaster.update();
+            //storageMaster.update();
             for (int ii = 0; ii < orientation.length; ii++) {orientation[ii] = emu.getOrientation(ii);}
             telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
+            telemetry.addData("Pitch: ", emu.avgIMU(orientation, IMUExpanded.PITCH, AngleUnit.DEGREES));
+            telemetry.addData("Roll: ", emu.avgIMU(orientation, IMUExpanded.ROLL, AngleUnit.DEGREES));
             //gps.updatePositionGeneral();
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());

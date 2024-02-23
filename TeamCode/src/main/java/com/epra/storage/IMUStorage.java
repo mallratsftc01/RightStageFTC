@@ -1,30 +1,40 @@
 package com.epra.storage;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+
 import java.util.ArrayList;
 public class IMUStorage{
-    double[][] imuValues = new double[2][3];
+    YawPitchRollAngles[] orientation;
 
     /**Stores values for the IMU and uses them to perform calculations.
      *<p></p>
      *Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-    public IMUStorage (double yawDegrees, double pitchDegrees, double rollDegrees, double yawRadians, double pitchRadians, double rollRadians) {
-        updateIMUValues(yawDegrees,  pitchDegrees,  rollDegrees, yawRadians, pitchRadians, rollRadians);}
+    public IMUStorage (YawPitchRollAngles[] orientationIn) {
+        updateIMUValues(orientationIn);}
 
     /**Stores values provided.*/
-    public void updateIMUValues(double yawDegrees, double pitchDegrees, double rollDegrees, double yawRadians, double pitchRadians, double rollRadians) {
-        imuValues[0][0] = yawDegrees;
-        imuValues[0][1] = pitchDegrees;
-        imuValues[0][2] = rollDegrees;
-        imuValues[1][0] = yawRadians;
-        imuValues[1][1] = pitchRadians;
-        imuValues[1][2] = rollRadians;
+    public void updateIMUValues(YawPitchRollAngles[] orientationIn) {
+        orientation = new YawPitchRollAngles[orientationIn.length];
+        for (int ii = 0; ii < orientation.length; ii++) {orientation[ii] = orientationIn[ii];}
     }
     /**Returns the average orientation of the IMU(s) based on stored values.*/
     public double avgIMU(int axis, AngleUnit angleUnit) {
-        if (angleUnit.equals(AngleUnit.DEGREES)) {return imuValues[0][axis];}
-        if (angleUnit.equals(AngleUnit.RADIANS)) {return imuValues[1][axis];}
-        else {return 0;}
+        double r = 0;
+        for (int ii = 0; ii < orientation.length; ii++) {
+            switch (axis) {
+                case 0:
+                    r += orientation[ii].getYaw(angleUnit);
+                    break;
+                case 1:
+                    r += orientation[ii].getPitch(angleUnit);
+                    break;
+                case 2:
+                    r += orientation[ii].getRoll(angleUnit);
+                    break;
+            }
+        }
+        return r / orientation.length;
     }
     /**Returns the distance between the current orientation of the IMU(s) and the target based on stored values. Do not use, always use trueDistIMU.*/
     public double distIMU(int axis, AngleUnit angleUnit, double target) {return target - avgIMU(axis, angleUnit);}

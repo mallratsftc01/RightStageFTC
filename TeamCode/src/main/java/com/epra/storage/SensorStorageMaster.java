@@ -1,6 +1,7 @@
 package com.epra.storage;
 
 import com.epra.IMUExpanded;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
@@ -43,13 +44,7 @@ public class SensorStorageMaster {
         for (int ii = 0; ii < touchSensors.length; ii++) {b[ii] = touchSensors[ii].isPressed();}
         binarySensors = new SensorBooleanStorage(b);
 
-        imuStorage = new IMUStorage(
-                imu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES),
-                imu.avgIMU(IMUExpanded.PITCH, AngleUnit.DEGREES),
-                imu.avgIMU(IMUExpanded.ROLL, AngleUnit.DEGREES),
-                imu.avgIMU(IMUExpanded.YAW, AngleUnit.RADIANS),
-                imu.avgIMU(IMUExpanded.PITCH, AngleUnit.RADIANS),
-                imu.avgIMU(IMUExpanded.ROLL, AngleUnit.RADIANS));
+        imuStorage = new IMUStorage(imu.getOrientation());
     }
     /**Updates the values associated with the motors.*/
     public void updateMotors() {
@@ -70,13 +65,7 @@ public class SensorStorageMaster {
     }
     /**Updates the values associated with the IMU.*/
     public void updateIMU() {
-        imuStorage.updateIMUValues(
-                imu.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES),
-                imu.avgIMU(IMUExpanded.PITCH, AngleUnit.DEGREES),
-                imu.avgIMU(IMUExpanded.ROLL, AngleUnit.DEGREES),
-                imu.avgIMU(IMUExpanded.YAW, AngleUnit.RADIANS),
-                imu.avgIMU(IMUExpanded.PITCH, AngleUnit.RADIANS),
-                imu.avgIMU(IMUExpanded.ROLL, AngleUnit.RADIANS));
+        imuStorage.updateIMUValues(imu.getOrientation());
     }
     /**Updates all values at their frequency.*/
     public void update() {

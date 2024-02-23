@@ -43,6 +43,12 @@ public class IMUExpanded{
         else {return null;}
     }
 
+    public YawPitchRollAngles[] getOrientation() {
+        YawPitchRollAngles[] o = new YawPitchRollAngles[imus.size()];
+        for (int ii = 0; ii < imus.size(); ii++) {o[ii] = imus.get(ii).getRobotYawPitchRollAngles();}
+        return o;
+    }
+
     /**Returns the average orientation of the IMU(s).*/
     public double avgIMU(YawPitchRollAngles[] orientation, int axis, AngleUnit angleUnit) {
         double r = 0;
