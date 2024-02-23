@@ -117,9 +117,14 @@ public class RightStage extends LinearOpMode {
 
         //init webcam for color detection
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        rightCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), cameraMonitorViewId);
-        aprilCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 3"), cameraMonitorViewId);
+        int[] viewportContainerIds = OpenCvCameraFactory.getInstance()
+                .splitLayoutForMultipleViewports(
+                        cameraMonitorViewId, //The container we're splitting
+                        3, //The number of sub-containers to create
+                        OpenCvCameraFactory.ViewportSplitMethod.VERTICALLY);
+        rightCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), viewportContainerIds[0]);
+        leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), viewportContainerIds[1]);
+        aprilCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 3"), viewportContainerIds[2]);
         rightPipeline = new UniversalColorDeterminationPipeline(new int[] {80, 200}, new int[] {100, 120}, 20, 20, CR, CB, TOLERANCE);
         leftPipeline = new UniversalColorDeterminationPipeline(new int[] {80, 200}, new int[] {100, 120}, 20, 20, CR, CB, TOLERANCE);
         aprilPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -128,13 +133,11 @@ public class RightStage extends LinearOpMode {
         leftCam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
         rightCam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
         aprilCam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
-        OpenCvCamera.AsyncCameraOpenListener async = new OpenCvCamera.AsyncCameraOpenListener()
+        leftCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened() {
                 leftCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                rightCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                aprilCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -142,13 +145,33 @@ public class RightStage extends LinearOpMode {
                 telemetry.addData("Error opening the left webcam, error code ", errorCode);
                 telemetry.update();
             }
-        };
-        leftCam.openCameraDeviceAsync(async);
-        rightCam.openCameraDeviceAsync(async);
-        aprilCam.openCameraDeviceAsync(async);
+        });
+        rightCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened() {
+                rightCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
 
-        telemetry.addData("left cam: ", leftCam.getCalibrationIdentity());
-        telemetry.update();
+            @Override
+            public void onError(int errorCode) {
+                telemetry.addData("Error opening the right webcam, error code ", errorCode);
+                telemetry.update();
+            }
+        });
+        aprilCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened() {
+                aprilCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                telemetry.addData("Error opening the right webcam, error code ", errorCode);
+                telemetry.update();
+            }
+        });
 
         //initCamera();
         //CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
