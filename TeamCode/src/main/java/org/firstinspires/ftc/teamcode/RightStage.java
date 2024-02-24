@@ -241,7 +241,7 @@ public class RightStage extends LinearOpMode {
                 } else {claw.setPower(0);}
             } else {
                 clawFlag = 0;
-                claw.setPower(controller2.analogDeadband(Controller.Button.LEFT_TRIGGER) - controller2.analogDeadband(Controller.Button.RIGHT_TRIGGER));
+                claw.setPower((controller2.analogDeadband(Controller.Button.LEFT_TRIGGER) + controller1.buttonSingleInt(Controller.Button.BUMPER_LEFT)) - (controller2.analogDeadband(Controller.Button.RIGHT_TRIGGER)) + controller1.buttonSingleInt(Controller.Button.BUMPER_RIGHT));
             }
             wrist.setPosition((controller2.buttonToggleSingle(Controller.Button.BUMPER_RIGHT)) ? 1 : -1);
             /*if (myDrive.getAverageVelocity() < 300 || controller2.buttonToggleSingle(Controller.Button.A)) {);
