@@ -57,11 +57,11 @@ public class RightStage extends LinearOpMode {
     OpenCvWebcam rightCam;
     OpenCvWebcam leftCam;
     OpenCvWebcam aprilCam;
-    UniversalColorDeterminationPipeline rightPipeline;
-    UniversalColorDeterminationPipeline leftPipeline;
+    DualCameraElementDeterminationPipeline rightPipeline;
+    DualCameraElementDeterminationPipeline leftPipeline;
     AprilTagDetectionPipeline aprilPipeline;
-    int elementPos = 2;
-    UniversalColorDeterminationPipeline.ElementColor snapshotColor = UniversalColorDeterminationPipeline.ElementColor.BLUE;
+    ElementDeterminationPipeline.ElementPosition snapshotPos = ElementDeterminationPipeline.ElementPosition.CENTER;
+    DualCameraElementDeterminationPipeline.ElementColor snapshotColor = DualCameraElementDeterminationPipeline.ElementColor.NONE;
     // Lens intrinsics
     // UNITS ARE PIXELS
     // NOTE: this calibration is for the C920 webcam at 800x448.
@@ -120,36 +120,22 @@ public class RightStage extends LinearOpMode {
         int[] viewportContainerIds = OpenCvCameraFactory.getInstance()
                 .splitLayoutForMultipleViewports(
                         cameraMonitorViewId, //The container we're splitting
-                        3, //The number of sub-containers to create
-                        OpenCvCameraFactory.ViewportSplitMethod.VERTICALLY);
-        rightCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), viewportContainerIds[0]);
-        leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 2"), viewportContainerIds[1]);
-        aprilCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 3"), viewportContainerIds[2]);
-        rightPipeline = new UniversalColorDeterminationPipeline(new int[] {80, 200}, new int[] {100, 120}, 20, 20, CR, CB, TOLERANCE);
-        leftPipeline = new UniversalColorDeterminationPipeline(new int[] {80, 200}, new int[] {100, 120}, 20, 20, CR, CB, TOLERANCE);
-        aprilPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
+                        2, //The number of sub-containers to create
+                        OpenCvCameraFactory.ViewportSplitMethod.HORIZONTALLY);
+        telemetry.addData("l: ", viewportContainerIds.length);
+        telemetry.update();
+        //leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Left"), viewportContainerIds[0]);
+        rightCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Right"), viewportContainerIds[1]);
+        leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Left"), viewportContainerIds[0]);
+        //aprilCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam April"), viewportContainerIds[2]);
+        rightPipeline = new DualCameraElementDeterminationPipeline(60, 240, 140, 140, 20, 20);
+        leftPipeline = new DualCameraElementDeterminationPipeline(0, 170, 140, 140, 20, 20);
         rightCam.setPipeline(rightPipeline);
-        leftCam.setPipeline(leftPipeline);
-        leftCam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
-        rightCam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
-        aprilCam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
-        leftCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened() {
-                leftCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-            }
-
-            @Override
-            public void onError(int errorCode) {
-                telemetry.addData("Error opening the left webcam, error code ", errorCode);
-                telemetry.update();
-            }
-        });
         rightCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened() {
+                rightCam.setPipeline(rightPipeline);
                 rightCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
 
@@ -159,11 +145,26 @@ public class RightStage extends LinearOpMode {
                 telemetry.update();
             }
         });
-        aprilCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        leftCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened() {
-                aprilCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                leftCam.setPipeline(leftPipeline);
+                leftCam.startStreaming(320, 240, OpenCvCameraRotation.UPSIDE_DOWN);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                telemetry.addData("Error opening the left webcam, error code ", errorCode);
+                telemetry.update();
+            }
+        });
+        /*aprilCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened() {
+                //aprilPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
+                //aprilCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -171,7 +172,7 @@ public class RightStage extends LinearOpMode {
                 telemetry.addData("Error opening the right webcam, error code ", errorCode);
                 telemetry.update();
             }
-        });
+        });*/
 
         //initCamera();
         //CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
@@ -197,14 +198,37 @@ public class RightStage extends LinearOpMode {
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-        waitForStart();
+        while (!isStarted() && !isStopRequested()) {
+            if (leftPipeline.getPosition() != null && rightPipeline.getPosition() != null) {
+                if (rightPipeline.getPosition() == DualCameraElementDeterminationPipeline.ElementPosition.LEFT) {
+                    snapshotPos = ElementDeterminationPipeline.ElementPosition.LEFT;
+                } else if (leftPipeline.getPosition() == DualCameraElementDeterminationPipeline.ElementPosition.RIGHT) {
+                    snapshotPos = ElementDeterminationPipeline.ElementPosition.RIGHT;
+                } else if (rightPipeline.getPosition() == DualCameraElementDeterminationPipeline.ElementPosition.RIGHT || leftPipeline.getPosition() == DualCameraElementDeterminationPipeline.ElementPosition.LEFT) {
+                    snapshotPos = ElementDeterminationPipeline.ElementPosition.CENTER;
+                }
+
+                if (leftPipeline.getColor() == DualCameraElementDeterminationPipeline.ElementColor.RED || rightPipeline.getColor() == DualCameraElementDeterminationPipeline.ElementColor.RED) {
+                    snapshotColor = DualCameraElementDeterminationPipeline.ElementColor.RED;
+                } else if (leftPipeline.getColor() == DualCameraElementDeterminationPipeline.ElementColor.BLUE || rightPipeline.getColor() == DualCameraElementDeterminationPipeline.ElementColor.BLUE) {
+                    snapshotColor = DualCameraElementDeterminationPipeline.ElementColor.BLUE;
+                } else {
+                    snapshotColor = DualCameraElementDeterminationPipeline.ElementColor.NONE;
+                }
+                telemetry.addData("pos: ", snapshotPos);
+                telemetry.addData("color: ", snapshotColor);
+                telemetry.update();
+            }
+        }
         startTime = System.currentTimeMillis() - 1000;
         while (opModeIsActive()) {
             for (LynxModule module : allHubs) {
                 module.clearBulkCache();
             }
             //storageMaster.update();
-            for (int ii = 0; ii < orientation.length; ii++) {orientation[ii] = emu.getOrientation(ii);}
+            for (int ii = 0; ii < orientation.length; ii++) {
+                orientation[ii] = emu.getOrientation(ii);
+            }
             telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
             telemetry.addData("Pitch: ", emu.avgIMU(orientation, IMUExpanded.PITCH, AngleUnit.DEGREES));
             telemetry.addData("Roll: ", emu.avgIMU(orientation, IMUExpanded.ROLL, AngleUnit.DEGREES));
@@ -215,7 +239,7 @@ public class RightStage extends LinearOpMode {
             //telemetry.addData("Yaw: ", storageMaster.imuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
             telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
             telemetry.addData("Times Looped", ++timesRun);
-            telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime)/1000.0));
+            telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime) / 1000.0));
             //arm controls
             double shoulderPow = 0.0;
             /*switch (controller2.buttonCounterSingle(Controller.Button.B, 2)) {
@@ -238,7 +262,9 @@ public class RightStage extends LinearOpMode {
                 if (clawFlag < 16) {
                     clawFlag++;
                     claw.setPower(-1);
-                } else {claw.setPower(0);}
+                } else {
+                    claw.setPower(0);
+                }
             } else {
                 clawFlag = 0;
                 claw.setPower((controller2.analogDeadband(Controller.Button.LEFT_TRIGGER) + controller1.buttonSingleInt(Controller.Button.BUMPER_LEFT)) - (controller2.analogDeadband(Controller.Button.RIGHT_TRIGGER)) + controller1.buttonSingleInt(Controller.Button.BUMPER_RIGHT));
@@ -260,7 +286,17 @@ public class RightStage extends LinearOpMode {
             //Drive Control
             float slow = 1 - (controller1.analogDeadband(Controller.Button.LEFT_TRIGGER) * 0.5f);
             //dpad drive
-            if (controller1.buttonCase(Controller.Button.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
+            if (controller1.buttonCase(Controller.Button.B)) {
+                double current = emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES) + 180.0;
+                double target = (current % 90 <= 45) ? current - (current % 90) : current + (90 - (current % 90));
+                target -= 180.0;
+                telemetry.addData("target: ", target);
+                double dist = target - (current - 180);
+                telemetry.addData("dist: ", dist);
+                float pow =  -1.0f * (float) Math.pow(dist, 3) / 1080.0f;
+                telemetry.addData("pow: ", pow);
+                myDrive.setDrivePower(0, 0, pow, 0);
+            } else if (controller1.buttonCase(Controller.Button.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
             else if (controller1.buttonCase(Controller.Button.UP)) {myDrive.setDrivePower(0, -0.5f * slow, 0, 0);}
             else if (controller1.buttonCase(Controller.Button.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
             else if (controller1.buttonCase(Controller.Button.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
