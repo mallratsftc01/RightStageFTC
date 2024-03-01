@@ -72,11 +72,20 @@ public class IMUExpanded{
     /**Returns the true distance between the orientation of the IMU(s) and the target, including looping from 360 to 1.*/
     public double trueDistIMU(YawPitchRollAngles[] orientation, int axis, AngleUnit angleUnit, double target) {
         double current = avgIMU(orientation, axis, angleUnit);
-        double newTarget = target;
-        if (Math.min(target, current) == target) {newTarget += 360;}
-        else {current += 360;}
-        double dist1 = Math.abs(distIMU(orientation, axis,angleUnit, target));
-        double r =(Math.min(dist1, Math.abs((newTarget - current))) == dist1) ? distIMU(orientation, axis,angleUnit, target) : (newTarget - current);
-        return (Math.abs(r) - 180) * Math.signum(r) * -1.0;
+        double r;
+        if (current - target < 0) {
+            if (current - target < -180) {
+                r = current + (360 - target);
+            } else {
+                r = current - target;
+            }
+        } else {
+            if (current - target > 180) {
+                r = current - target - 360;
+            } else {
+                r = current - target;
+            }
+        }
+        return r;
     }
 }

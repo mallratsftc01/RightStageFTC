@@ -7,8 +7,10 @@ import com.epra.storage.SensorStorageMaster;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -159,8 +161,8 @@ public class DriveTrain {
             //ZK - 9/24/2022 - Mecanum Drive
             //double leftX = powerLeftX * 1.1;
             double denominator = Math.max(Math.abs(powerLeftY) + Math.abs(powerLeftX) + Math.abs(powerRightX), 1);
-            rightPowerF = ((-1 * powerLeftY + powerRightX - powerLeftX) / denominator) * 0.8;
-            leftPowerF = ((-1 * powerLeftY + powerRightX + powerLeftX) / denominator) * 0.8;
+            rightPowerF = ((-1 * powerLeftY + powerRightX - powerLeftX) / denominator) * 1;
+            leftPowerF = ((-1 * powerLeftY + powerRightX + powerLeftX) / denominator) * 1;
             rightPowerB = ((-1 * powerLeftY - powerRightX - powerLeftX) / denominator) * 1;
             leftPowerB = ((-1 * powerLeftY - powerRightX + powerLeftX) / denominator) * 1;
         } else {
@@ -171,7 +173,7 @@ public class DriveTrain {
         setMotorPowers();
     }
 
-    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, SensorStorageMaster storage) {
+    public String setDrivePower (float powerRightY, float powerLeftY, float powerRightX, float powerLeftX, IMUExpanded imu, YawPitchRollAngles[] orientation) {
         String re = "";
         if (driveType == 0) {
             // Tank Drive
@@ -197,20 +199,20 @@ public class DriveTrain {
         } else if (driveType == 3) {
             // left stick moves the robot, right stick rotates the robot
             //ZK - 11/22/2023 - Gyro Mediated Mecanum Drive
-            targetDegrees += powerRightX * -18;
-            targetDegrees %= 360;
+            targetDegrees += powerRightX * -3;
+            double target = (targetDegrees % 360) - 180;
             re = targetDegrees.toString();
-            float rPow = (Math.abs(storage.imuStorage.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) > 5) ? (float) (storage.imuStorage.trueDistIMU(IMUExpanded.YAW, AngleUnit.DEGREES, targetDegrees)) : 0.0f;
+            float rPow = (Math.abs(imu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, target)) > 5) ? (float) (imu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, target)) : 0.0f;
             re = re + "," + rPow;
             if (Math.abs(rPow) > 0.0f) {
-                rPow /= 90.0f;
-                rPow = (rPow > 1.0f || rPow < -1.0f) ? Math.signum(rPow) : rPow;
+                rPow /= 60.0f;
+                rPow = (Math.abs(rPow) > 1.0f) ? Math.signum(rPow) : rPow;
                 rPow = (Math.abs(rPow) <= 0.35f) ? Math.signum(rPow) * 0.35f : rPow;
             }
             re = re + "," + rPow;
             double denominator = Math.max(Math.abs(powerLeftY) + Math.abs(powerLeftX) + Math.abs(rPow), 1);
-            rightPowerF = ((-1 * powerLeftY + rPow - powerLeftX) / denominator) * 0.8;
-            leftPowerF = ((-1 * powerLeftY + rPow + powerLeftX) / denominator) * 0.8;
+            rightPowerF = ((-1 * powerLeftY + rPow - powerLeftX) / denominator) * 1;
+            leftPowerF = ((-1 * powerLeftY + rPow + powerLeftX) / denominator) * 1;
             rightPowerB = ((-1 * powerLeftY - rPow - powerLeftX) / denominator) * 1;
             leftPowerB = ((-1 * powerLeftY - rPow + powerLeftX) / denominator) * 1;
 

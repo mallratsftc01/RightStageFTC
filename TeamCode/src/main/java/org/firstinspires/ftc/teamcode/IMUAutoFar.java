@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.epra.*;
-import com.epra.storage.*;
-import com.epra.pipelines.*;
-import com.epra.location.*;
+import com.epra.Controller;
+import com.epra.DriveTrain;
+import com.epra.IMUExpanded;
+import com.epra.pipelines.DualCameraElementDeterminationPipeline;
+import com.epra.pipelines.ElementDeterminationPipeline;
+import com.epra.storage.IMUStorage;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -14,27 +17,48 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.epra.*;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
-import java.util.List;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.firstinspires.ftc.vision.tfod.TfodProcessor;
-
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-@TeleOp
-public class RightStage extends LinearOpMode {
+import java.util.List;
+
+@Autonomous
+public class IMUAutoFar extends LinearOpMode {
+    enum Path {
+        RIGHT_SPIKE_NEAR_BLUE,
+        CENTER_SPIKE_NEAR_BLUE,
+        LEFT_SPIKE_NEAR_BLUE,
+        RIGHT_SPIKE_FAR_BLUE,
+        CENTER_SPIKE_FAR_BLUE,
+        LEFT_SPIKE_FAR_BLUE,
+        DRIVE_FAR_BLUE,
+        APRIL_SEARCH_BLUE,
+        BACKDROP_BLUE,
+        END_BLUE,
+        RIGHT_SPIKE_NEAR_RED,
+        CENTER_SPIKE_NEAR_RED,
+        LEFT_SPIKE_NEAR_RED,
+        RIGHT_SPIKE_FAR_RED,
+        CENTER_SPIKE_FAR_RED,
+        LEFT_SPIKE_FAR_RED,
+        DRIVE_FAR_RED,
+        APRIL_SEARCH_RED,
+        BACKDROP_RED,
+        END_RED
+    }
+    private Path path;
+    enum Location {
+        NEAR,
+        FAR
+    }
+    private Location location = Location.NEAR;
     private static final int CR = 240;
     private static final int CB = 0;
     private static final int TOLERANCE = 40;
@@ -49,7 +73,6 @@ public class RightStage extends LinearOpMode {
     CRServo claw;
     Servo wrist;
     int clawFlag = 0;
-    CRServo plane;
     DrawerSlide scrollArm;
     private Controller controller1;
     private Controller controller2;
@@ -106,7 +129,6 @@ public class RightStage extends LinearOpMode {
 
         claw = hardwareMap.get(CRServo.class, "clawServo");
         wrist = hardwareMap.get(Servo.class, "wristServo");
-        plane = hardwareMap.get(CRServo.class, "drone");
 
         controller1 = new Controller (gamepad1, 0.05F);
         controller2 = new Controller (gamepad2, 0.05F);
@@ -128,7 +150,7 @@ public class RightStage extends LinearOpMode {
         rightCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Right"), viewportContainerIds[1]);
         //leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Left"), viewportContainerIds[0]);
         //aprilCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam April"), viewportContainerIds[2]);
-        rightPipeline = new DualCameraElementDeterminationPipeline(40, 215, 120, 120, 20, 40);
+        rightPipeline = new DualCameraElementDeterminationPipeline(40, 215, 140, 140, 20, 40);
         leftPipeline = new DualCameraElementDeterminationPipeline(0, 160, 160, 160, 20, 40);
         rightCam.setPipeline(rightPipeline);
         rightCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -220,89 +242,49 @@ public class RightStage extends LinearOpMode {
                 telemetry.update();
             }
         }
-        startTime = System.currentTimeMillis() - 1000;
+        String p = snapshotPos.toString() + "_SPIKE_" + location.toString() + "_" + snapshotColor.toString();
+        path = Path.valueOf(p);
+        startTime = System.currentTimeMillis();
+        long saveTime = startTime;
+        int step = 0;
         while (opModeIsActive()) {
             for (LynxModule module : allHubs) {
                 module.clearBulkCache();
             }
-            //storageMaster.update();
             for (int ii = 0; ii < orientation.length; ii++) {
                 orientation[ii] = emu.getOrientation(ii);
             }
-            telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
-            telemetry.addData("Pitch: ", emu.avgIMU(orientation, IMUExpanded.PITCH, AngleUnit.DEGREES));
-            telemetry.addData("Roll: ", emu.avgIMU(orientation, IMUExpanded.ROLL, AngleUnit.DEGREES));
-            //gps.updatePositionGeneral();
-            //telemetry.addData("label: ", cam.getLabel(0));
-            //telemetry.addData("Num Recogs: ", cam.numRecognitions());
-            //telemetry.addData("ID: ", cam.getID(0));
-            //telemetry.addData("Yaw: ", storageMaster.imuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
-            telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
-            telemetry.addData("Times Looped", ++timesRun);
-            telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime) / 1000.0));
-            //arm controls
-            double shoulderPow = 0.0;
-            /*switch (controller2.buttonCounterSingle(Controller.Button.B, 2)) {
-                case 0:
-                    shoulderPow = scrollArm.targetShoulderDegree(120.0);
-                    break;
-                case 1:
-                    shoulderPow = scrollArm.targetShoulderDegree(185.0);
-                    break;
-            }
-            shoulderPow *= (controller2.buttonCase(Controller.Button.X)) ? 0.0 : -1.0;*/
-            telemetry.addData("pow: ", shoulderPow);
-            telemetry.addData("degree: ", scrollArm.getShoulderDegree());
-            shoulderPow = controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y) * 0.5;
-            scrollArm.moveShoulder(shoulderPow);
-            //scrollArm.moveShoulder(controller2.analogDeadband(Controller.Button.LEFT_STICK_Y) * 0.5);
-            //scrollArm.moveExtend(0.5 * controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y));
 
-            if (controller2.buttonCase(Controller.Button.BUMPER_LEFT)) {
-                if (clawFlag < 16) {
-                    clawFlag++;
-                    claw.setPower(-1);
-                } else {
-                    claw.setPower(0);
+            if (path == Path.CENTER_SPIKE_NEAR_RED) {
+                switch (step) {
+                    case 0:
+                        myDrive.setDrivePower(0, -0.5f, 0, 0, emu, orientation);
+                        if (System.currentTimeMillis() - saveTime > 1150) {step++;
+                            saveTime = System.currentTimeMillis();}
+                        break;
+                    case 1:
+                        myDrive.setDrivePower(0, 0, 0, 0, emu, orientation);
+                        claw.setPower(-1);
+                        if (System.currentTimeMillis() - saveTime > 1000) {step++;
+                            saveTime = System.currentTimeMillis();}
+                        break;
+                    case 2:
+                        wrist.setPosition(-1);
+                        claw.setPower(1);
+                        if (System.currentTimeMillis() - saveTime > 500) {step++;
+                            saveTime = System.currentTimeMillis();}
+                        break;
+                    case 3:
+                        claw.setPower(0);
+                        myDrive.setDrivePower(0, 0, 0.25f, 0);
+                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, -90)) < 10) {step++;
+                            saveTime = System.currentTimeMillis();}
+                        break;
                 }
-            } else {
-                clawFlag = 0;
-                claw.setPower((controller2.analogDeadband(Controller.Button.LEFT_TRIGGER) + controller1.buttonSingleInt(Controller.Button.BUMPER_LEFT)) - (controller2.analogDeadband(Controller.Button.RIGHT_TRIGGER)) + controller1.buttonSingleInt(Controller.Button.BUMPER_RIGHT));
             }
-            wrist.setPosition((controller2.buttonToggleSingle(Controller.Button.BUMPER_RIGHT)) ? 1 : -1);
-            /*if (myDrive.getAverageVelocity() < 300 || controller2.buttonToggleSingle(Controller.Button.A)) {);
-            } else {wrist.setPosition(-1);}*/
-
-            //scrollArm.moveExtendMagnet(controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y), -0.5*controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y));
-            telemetry.addData("Extend pos: ", extender.getCurrentPosition());
-            telemetry.addData("Shoulder pos: ", scrollArm.getShoulderDist());
-            telemetry.addData("Shoulder velo: ", shoulder.getVelocity());
-
-            plane.setPower((controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y)) ? -1.0 : 0);
-            telemetry.addData("Plane connection: ", plane.getConnectionInfo());
-            telemetry.addData("Ys pressed: ", controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y));
-            telemetry.addData("plane: ", plane.getPower());
-
-            //Drive Control
-            float slow = 1 - (controller1.analogDeadband(Controller.Button.LEFT_TRIGGER) * 0.5f);
-            //dpad drive
-            if (controller1.buttonCase(Controller.Button.B)) {
-                double current = emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES) + 180.0;
-                double target = (current % 90 <= 45) ? current - (current % 90) : current + (90 - (current % 90));
-                target -= 180.0;
-                telemetry.addData("target: ", target);
-                double dist = target - (current - 180);
-                telemetry.addData("dist: ", dist);
-                float pow =  -1.0f * (float) Math.pow(dist, 3) / 1080.0f;
-                telemetry.addData("pow: ", pow);
-                myDrive.setDrivePower(0, 0, pow, 0);
-            } else if (controller1.buttonCase(Controller.Button.DOWN)) {myDrive.setDrivePower(0, 0.5f * slow, 0, 0);}
-            else if (controller1.buttonCase(Controller.Button.UP)) {myDrive.setDrivePower(0, -0.5f * slow, 0, 0);}
-            else if (controller1.buttonCase(Controller.Button.LEFT)) {myDrive.setDrivePower(0, 0, 0, -0.5f * slow);}
-            else if (controller1.buttonCase(Controller.Button.RIGHT)) {myDrive.setDrivePower(0, 0, 0, 0.5f * slow);}
-            else if (controller1.analogDeadband(Controller.Button.RIGHT_TRIGGER) != 0) {myDrive.setDrivePower(controller1.analogDeadband(Controller.Button.RIGHT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.RIGHT_STICK_X) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_X) * slow, emu, orientation);}
-            //default to normal drive
-            else {myDrive.setDrivePower(controller1.analogDeadband(Controller.Button.RIGHT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.RIGHT_STICK_X) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_X) * slow);}
+            telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
+            telemetry.addData("Path: ", path.toString());
+            telemetry.addData("Step: ", step);
             telemetry.update();
         }
     }

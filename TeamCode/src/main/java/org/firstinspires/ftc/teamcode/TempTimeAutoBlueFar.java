@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.epra.Controller;
 import com.epra.DriveTrain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,6 +13,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous
+@Disabled
 public class TempTimeAutoBlueFar extends LinearOpMode {
     private DcMotorEx northEastMotor;
     private DcMotorEx southEastMotor;

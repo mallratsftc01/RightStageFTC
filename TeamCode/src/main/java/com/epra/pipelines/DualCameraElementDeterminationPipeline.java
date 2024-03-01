@@ -232,7 +232,7 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
         String s = "max: ";
         s = s + max;
         Imgproc.putText(input, s, new Point(10, 10), 0, 0.5, GREEN, 2);
-        if (max < 175) {
+        if (max < 160) {
             position = ElementPosition.NONE;
             color = ElementColor.NONE;
         } else if(max == avg1) { // Was it from region 1?
