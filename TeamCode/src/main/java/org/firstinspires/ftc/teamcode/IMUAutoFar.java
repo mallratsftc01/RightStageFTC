@@ -53,11 +53,14 @@ public class IMUAutoFar extends LinearOpMode {
         BACKDROP_RED,
         END_RED
     }
+
     private Path path;
+
     enum Location {
         NEAR,
         FAR
     }
+
     private Location location = Location.NEAR;
     private static final int CR = 240;
     private static final int CB = 0;
@@ -130,8 +133,8 @@ public class IMUAutoFar extends LinearOpMode {
         claw = hardwareMap.get(CRServo.class, "clawServo");
         wrist = hardwareMap.get(Servo.class, "wristServo");
 
-        controller1 = new Controller (gamepad1, 0.05F);
-        controller2 = new Controller (gamepad2, 0.05F);
+        controller1 = new Controller(gamepad1, 0.05F);
+        controller2 = new Controller(gamepad2, 0.05F);
 
         magnet = hardwareMap.get(TouchSensor.class, "magneto");
 
@@ -150,11 +153,10 @@ public class IMUAutoFar extends LinearOpMode {
         rightCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Right"), viewportContainerIds[1]);
         //leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Left"), viewportContainerIds[0]);
         //aprilCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam April"), viewportContainerIds[2]);
-        rightPipeline = new DualCameraElementDeterminationPipeline(40, 215, 140, 140, 20, 40);
-        leftPipeline = new DualCameraElementDeterminationPipeline(0, 160, 160, 160, 20, 40);
+        rightPipeline = new DualCameraElementDeterminationPipeline(65, 240, 130, 120, 40, 40);
+        leftPipeline = new DualCameraElementDeterminationPipeline(0, 160, 125, 135, 40, 40);
         rightCam.setPipeline(rightPipeline);
-        rightCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
+        rightCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
                 rightCam.setPipeline(rightPipeline);
@@ -167,8 +169,7 @@ public class IMUAutoFar extends LinearOpMode {
                 telemetry.update();
             }
         });
-        leftCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
+        leftCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
                 leftCam.setPipeline(leftPipeline);
@@ -200,7 +201,7 @@ public class IMUAutoFar extends LinearOpMode {
         //CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
 
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
@@ -210,7 +211,9 @@ public class IMUAutoFar extends LinearOpMode {
         emu2.initialize(new IMU.Parameters(orientationOnRobot));
         emu = new IMUExpanded(emu1, emu2);
         orientation = new YawPitchRollAngles[2];
-        for (int ii = 0; ii < orientation.length; ii++) {orientation[ii] = emu.getOrientation(ii);}
+        for (int ii = 0; ii < orientation.length; ii++) {
+            orientation[ii] = emu.getOrientation(ii);
+        }
 
         DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
 
@@ -259,34 +262,155 @@ public class IMUAutoFar extends LinearOpMode {
                 switch (step) {
                     case 0:
                         myDrive.setDrivePower(0, -0.5f, 0, 0, emu, orientation);
-                        if (System.currentTimeMillis() - saveTime > 1150) {step++;
-                            saveTime = System.currentTimeMillis();}
+                        if (System.currentTimeMillis() - saveTime > 1400) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
                         break;
                     case 1:
                         myDrive.setDrivePower(0, 0, 0, 0, emu, orientation);
                         claw.setPower(-1);
-                        if (System.currentTimeMillis() - saveTime > 1000) {step++;
-                            saveTime = System.currentTimeMillis();}
+                        if (System.currentTimeMillis() - saveTime > 700) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
                         break;
                     case 2:
-                        wrist.setPosition(-1);
-                        claw.setPower(1);
-                        if (System.currentTimeMillis() - saveTime > 500) {step++;
-                            saveTime = System.currentTimeMillis();}
+                        claw.setPower(-1);
+                        if (System.currentTimeMillis() - saveTime > 300) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
                         break;
                     case 3:
+                        wrist.setPosition(0);
+                        claw.setPower(1);
+                        myDrive.setDrivePower(0, 0.4f, 0, 0, emu, orientation);
+                        if (System.currentTimeMillis() - saveTime > 400) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 4:
                         claw.setPower(0);
-                        myDrive.setDrivePower(0, 0, 0.25f, 0);
-                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, -90)) < 10) {step++;
-                            saveTime = System.currentTimeMillis();}
+                        myDrive.setDrivePower(0, 0, 0.35f, 0);
+                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, -90)) < 5) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 5:
+                        myDrive.setDrivePower(0, 0, 0, 0);
+                        saveTime = System.currentTimeMillis();
                         break;
                 }
             }
+
+            if (path == Path.LEFT_SPIKE_NEAR_RED) {
+                switch (step) {
+                    case 0:
+                        myDrive.setDrivePower(0, -0.5f, 0, 0, emu, orientation);
+                        if (System.currentTimeMillis() - saveTime > 1250) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 1:
+                        claw.setPower(0);
+                        myDrive.setDrivePower(0, 0, -0.35f, 0);
+                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, 65)) < 5) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 2:
+                        myDrive.setDrivePower(0, 0, 0, 0);
+                        claw.setPower(-1);
+                        if (System.currentTimeMillis() - saveTime > 250) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 3:
+                        wrist.setPosition(-1);
+                        claw.setPower(1);
+                        //myDrive.setDrivePower(0, 0.3f, 0, 0, emu, orientation);
+                        if (System.currentTimeMillis() - saveTime > 300) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 4:
+                        claw.setPower(0);
+                        myDrive.setDrivePower(0, 0, 0.35f, 0);
+                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, -90)) < 5) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 5:
+                        myDrive.setDrivePower(0, 0, 0, 0);
+                        saveTime = System.currentTimeMillis();
+                        break;
+                }
+            }
+
+            if (path == Path.RIGHT_SPIKE_NEAR_RED) {
+                switch (step) {
+                    case 0:
+                        myDrive.setDrivePower(0, -0.5f, 0, 0, emu, orientation);
+                        if (System.currentTimeMillis() - saveTime > 1250) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 1:
+                        claw.setPower(0);
+                        myDrive.setDrivePower(0, 0, 0.35f, 0);
+                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, -45)) < 5) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 2:
+                        myDrive.setDrivePower(0, 0, 0, 0);
+                        claw.setPower(-1);
+                        if (System.currentTimeMillis() - saveTime > 250) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 3:
+                        wrist.setPosition(-1);
+                        claw.setPower(1);
+                        //myDrive.setDrivePower(0, 0.3f, 0, 0, emu, orientation);
+                        if (System.currentTimeMillis() - saveTime > 300) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 4:
+                        claw.setPower(0);
+                        myDrive.setDrivePower(0, 0, 0.35f, 0);
+                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, -90)) < 5) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 5:
+                        myDrive.setDrivePower(0, 0, 0, 0);
+                        saveTime = System.currentTimeMillis();
+                        break;
+                }
+            }
+
             telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
+            telemetry.addData("Dist: ", emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, -90));
             telemetry.addData("Path: ", path.toString());
             telemetry.addData("Step: ", step);
             telemetry.update();
         }
     }
 }
+
 
