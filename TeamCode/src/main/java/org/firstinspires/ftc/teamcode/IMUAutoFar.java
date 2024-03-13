@@ -250,6 +250,8 @@ public class IMUAutoFar extends LinearOpMode {
         startTime = System.currentTimeMillis();
         long saveTime = startTime;
         int step = 0;
+        emu1.resetYaw();
+        emu2.resetYaw();
         while (opModeIsActive()) {
             for (LynxModule module : allHubs) {
                 module.clearBulkCache();
@@ -463,6 +465,8 @@ public class IMUAutoFar extends LinearOpMode {
                     case 7:
                         myDrive.setDrivePower(0, 0, 0, 0);
                         saveTime = System.currentTimeMillis();
+                        path = Path.DRIVE_FAR_RED;
+                        step = 0;
                         break;
                 }
             }
@@ -526,6 +530,8 @@ public class IMUAutoFar extends LinearOpMode {
                     case 7:
                         myDrive.setDrivePower(0, 0, 0, 0);
                         saveTime = System.currentTimeMillis();
+                        path = Path.DRIVE_FAR_RED;
+                        step = 0;
                         break;
                 }
             }
@@ -573,6 +579,33 @@ public class IMUAutoFar extends LinearOpMode {
                         }
                         break;
                     case 5:
+                        myDrive.setDrivePower(0, 0, 0, 0);
+                        saveTime = System.currentTimeMillis();
+                        path = Path.DRIVE_FAR_RED;
+                        step = 0;
+                        break;
+                }
+            }
+
+            if (path == Path.DRIVE_FAR_RED) {
+                switch (step) {
+                    case 0:
+                        emu1.resetYaw();
+                        emu2.resetYaw();
+                        myDrive.setDrivePower(0, -0.5f, 0, 0, emu, orientation);
+                        if (System.currentTimeMillis() - saveTime > 3300) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 1:
+                        myDrive.setDrivePower(0, 0, 0, 0.5f, emu, orientation);
+                        if (System.currentTimeMillis() - saveTime > 1700) {
+                            step++;
+                            saveTime = System.currentTimeMillis();
+                        }
+                        break;
+                    case 2:
                         myDrive.setDrivePower(0, 0, 0, 0);
                         saveTime = System.currentTimeMillis();
                         break;
