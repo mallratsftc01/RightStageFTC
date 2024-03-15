@@ -639,7 +639,7 @@ public class IMUAutoFar extends LinearOpMode {
                     case 1:
                         shoulder.setPower(0);
                         myDrive.setDrivePower(0, -0.5f, 0, 0, emu, orientation);
-                        if (System.currentTimeMillis() - saveTime > 1100) {
+                        if (System.currentTimeMillis() - saveTime > 1300) {
                             step++;
                             saveTime = System.currentTimeMillis();
                         }
@@ -795,7 +795,7 @@ public class IMUAutoFar extends LinearOpMode {
                 switch (step) {
                     case 0:
                         myDrive.setDrivePower(0, -0.5f, 0, 0, emu, orientation);
-                        if (System.currentTimeMillis() - saveTime > 1250) {
+                        if (System.currentTimeMillis() - saveTime > 1500) {
                             step++;
                             saveTime = System.currentTimeMillis();
                         }
@@ -803,7 +803,7 @@ public class IMUAutoFar extends LinearOpMode {
                     case 1:
                         claw.setPower(0);
                         myDrive.setDrivePower(0, 0, -0.35f, 0);
-                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, 35)) < 5) {
+                        if (Math.abs(emu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, 50)) < 5) {
                             step++;
                             saveTime = System.currentTimeMillis();
                         }
