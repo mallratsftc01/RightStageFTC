@@ -6,6 +6,7 @@ import com.epra.location.AprilTagLocator;
 import com.epra.pipelines.ElementDeterminationPipeline;
 import com.epra.pipelines.UniversalColorDeterminationPipeline;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -26,6 +27,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 @Autonomous
+@Disabled
 public class ModularAutoNear extends LinearOpMode {
     private DcMotorEx northEastMotor;
     private DcMotorEx southEastMotor;
