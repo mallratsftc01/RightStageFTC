@@ -10,7 +10,6 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -30,7 +29,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.List;
 
 @Autonomous
-public class IMUAutoFar extends LinearOpMode {
+public class IMUAutoNear extends LinearOpMode {
     enum Path {
         RIGHT_SPIKE_NEAR_NONE,
         CENTER_SPIKE_NEAR_NONE,
@@ -63,7 +62,7 @@ public class IMUAutoFar extends LinearOpMode {
         FAR
     }
 
-    private Location location = Location.FAR;
+    private Location location = Location.NEAR;
     private static final int CR = 240;
     private static final int CB = 0;
     private static final int TOLERANCE = 40;
