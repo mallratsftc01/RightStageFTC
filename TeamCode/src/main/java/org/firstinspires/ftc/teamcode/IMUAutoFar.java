@@ -228,6 +228,7 @@ public class IMUAutoFar extends LinearOpMode {
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
+        wrist.setPosition(-1);
         while (!isStarted() && !isStopRequested()) {
             if (leftPipeline.getPosition() != null && rightPipeline.getPosition() != null) {
                 if (rightPipeline.getPosition() == DualCameraElementDeterminationPipeline.ElementPosition.LEFT) {
@@ -250,6 +251,7 @@ public class IMUAutoFar extends LinearOpMode {
                 telemetry.update();
             }
         }
+        wrist.setPosition(1);
         String p = snapshotPos.toString() + "_SPIKE_" + location.toString() + "_" + snapshotColor.toString();
         path = Path.valueOf(p);
         startTime = System.currentTimeMillis();
