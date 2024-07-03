@@ -23,11 +23,16 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.openftc.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
+import org.openftc.apriltag.AprilTagPose;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -38,6 +43,7 @@ public class RightStage extends LinearOpMode {
     private static final int CR = 240;
     private static final int CB = 0;
     private static final int TOLERANCE = 40;
+    static final double FEET_PER_METER = 3.28084;
 
     private DcMotorEx northEastMotor;
     private DcMotorEx southEastMotor;
@@ -60,19 +66,20 @@ public class RightStage extends LinearOpMode {
     DualCameraElementDeterminationPipeline rightPipeline;
     DualCameraElementDeterminationPipeline leftPipeline;
     AprilTagDetectionPipeline aprilPipeline;
+    AprilTagLocator aprilTagLocator;
     ElementDeterminationPipeline.ElementPosition snapshotPos = ElementDeterminationPipeline.ElementPosition.CENTER;
     DualCameraElementDeterminationPipeline.ElementColor snapshotColor = DualCameraElementDeterminationPipeline.ElementColor.NONE;
     // Lens intrinsics
     // UNITS ARE PIXELS
     // NOTE: this calibration is for the C920 webcam at 800x448.
     // You will need to do your own calibration for other configurations!
-    double fx = 578.272;
-    double fy = 578.272;
-    double cx = 402.145;
-    double cy = 221.506;
+    double fx = 1029.2267501799838;
+    double fy = 1021.8765164814395;
+    double cx = 643.2765424206337;
+    double cy = 431.1910146499371;
 
     // UNITS ARE METERS
-    double tagsize = 0.166;
+    double tagsize = 0.127;
 
     private TouchSensor magnet;
 
@@ -117,21 +124,21 @@ public class RightStage extends LinearOpMode {
 
         //init webcam for color detection
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        int[] viewportContainerIds = OpenCvCameraFactory.getInstance()
+        /*int[] viewportContainerIds = OpenCvCameraFactory.getInstance()
                 .splitLayoutForMultipleViewports(
                         cameraMonitorViewId, //The container we're splitting
                         2, //The number of sub-containers to create
                         OpenCvCameraFactory.ViewportSplitMethod.HORIZONTALLY);
         telemetry.addData("l: ", viewportContainerIds.length);
-        telemetry.update();
-        leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Left"), viewportContainerIds[0]);
-        rightCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Right"), viewportContainerIds[1]);
+        telemetry.update();*/
         //leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Left"), viewportContainerIds[0]);
-        //aprilCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam April"), viewportContainerIds[2]);
-        rightPipeline = new DualCameraElementDeterminationPipeline(40, 215, 120, 120, 20, 40);
-        leftPipeline = new DualCameraElementDeterminationPipeline(0, 160, 160, 160, 20, 40);
-        rightCam.setPipeline(rightPipeline);
-        rightCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        //rightCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Right"), viewportContainerIds[1]);
+        //leftCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam Left"), viewportContainerIds[0]);
+        aprilCam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam April"), cameraMonitorViewId);
+        aprilPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);//rightPipeline = new DualCameraElementDeterminationPipeline(40, 215, 120, 120, 20, 40);
+        //leftPipeline = new DualCameraElementDeterminationPipeline(0, 160, 160, 160, 20, 40);
+        //rightCam.setPipeline(rightPipeline);
+        /*rightCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened() {
@@ -158,21 +165,23 @@ public class RightStage extends LinearOpMode {
                 telemetry.addData("Error opening the left webcam, error code ", errorCode);
                 telemetry.update();
             }
-        });
-        /*aprilCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        });*/
+        aprilCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened() {
-                //aprilPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
-                //aprilCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                aprilCam.setPipeline(aprilPipeline);
+                aprilCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
             public void onError(int errorCode) {
-                telemetry.addData("Error opening the right webcam, error code ", errorCode);
+                telemetry.addData("Error opening the april webcam, error code ", errorCode);
                 telemetry.update();
             }
-        });*/
+        });
+
+        aprilTagLocator = new AprilTagLocator();
 
         //initCamera();
         //CameraPlus cam = new CameraPlus(aprilTag, tfod, visionPortal);
@@ -198,7 +207,7 @@ public class RightStage extends LinearOpMode {
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-        while (!isStarted() && !isStopRequested()) {
+        /*while (!isStarted() && !isStopRequested()) {
             if (leftPipeline.getPosition() != null && rightPipeline.getPosition() != null) {
                 if (rightPipeline.getPosition() == DualCameraElementDeterminationPipeline.ElementPosition.LEFT) {
                     snapshotPos = ElementDeterminationPipeline.ElementPosition.LEFT;
@@ -219,7 +228,8 @@ public class RightStage extends LinearOpMode {
                 telemetry.addData("color: ", snapshotColor);
                 telemetry.update();
             }
-        }
+        }*/
+        waitForStart();
         startTime = System.currentTimeMillis() - 1000;
         while (opModeIsActive()) {
             for (LynxModule module : allHubs) {
@@ -229,6 +239,25 @@ public class RightStage extends LinearOpMode {
             for (int ii = 0; ii < orientation.length; ii++) {
                 orientation[ii] = emu.getOrientation(ii);
             }
+
+            aprilPipeline.getDetectionsUpdate();
+            if (aprilPipeline.getLatestDetections() != null) {
+                for (AprilTagDetection detection : aprilPipeline.getLatestDetections()) {
+                    AprilTagPose pose = detection.pose;
+                    Orientation rot = Orientation.getOrientation(pose.R, AxesReference.INTRINSIC, AxesOrder.YXZ, AngleUnit.RADIANS);
+
+                    telemetry.addLine(String.format("\nDetected tag ID=%d", detection.id));
+                    telemetry.addLine(String.format("Translation X: %.2f feet", pose.x*FEET_PER_METER));
+                    telemetry.addLine(String.format("Translation Y: %.2f feet", pose.y*FEET_PER_METER));
+                    //telemetry.addLine(String.format("Translation Z: %.2f feet", pose.z*FEET_PER_METER));
+                    telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", rot.firstAngle));
+                    //telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", rot.secondAngle));
+                    //telemetry.addLine(String.format("Rotation Roll: %.2f degrees", rot.thirdAngle));
+                    telemetry.addData("Relative position X:", aprilTagLocator.relativeLocation(pose.x*FEET_PER_METER, pose.y*FEET_PER_METER, 0, rot.firstAngle)[0]);
+                    telemetry.addData("Relative position Y:", aprilTagLocator.relativeLocation(pose.x*FEET_PER_METER, pose.y*FEET_PER_METER, 0, rot.firstAngle)[1]);
+                }
+            }
+
             telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
             telemetry.addData("Pitch: ", emu.avgIMU(orientation, IMUExpanded.PITCH, AngleUnit.DEGREES));
             telemetry.addData("Roll: ", emu.avgIMU(orientation, IMUExpanded.ROLL, AngleUnit.DEGREES));
@@ -251,14 +280,14 @@ public class RightStage extends LinearOpMode {
                     break;
             }
             shoulderPow *= (controller2.buttonCase(Controller.Button.X)) ? 0.0 : -1.0;*/
-            telemetry.addData("pow: ", shoulderPow);
+            /*telemetry.addData("pow: ", shoulderPow);
             telemetry.addData("degree: ", scrollArm.getShoulderDegree());
             shoulderPow = controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y) * 0.5;
-            scrollArm.moveShoulder(shoulderPow);
+            scrollArm.moveShoulder(shoulderPow);*/
             //scrollArm.moveShoulder(controller2.analogDeadband(Controller.Button.LEFT_STICK_Y) * 0.5);
             //scrollArm.moveExtend(0.5 * controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y));
 
-            if (controller2.buttonCase(Controller.Button.BUMPER_LEFT)) {
+            /*if (controller2.buttonCase(Controller.Button.BUMPER_LEFT)) {
                 if (clawFlag < 16) {
                     clawFlag++;
                     claw.setPower(-1);
@@ -269,21 +298,21 @@ public class RightStage extends LinearOpMode {
                 clawFlag = 0;
                 claw.setPower((controller2.analogDeadband(Controller.Button.LEFT_TRIGGER) + controller1.buttonSingleInt(Controller.Button.BUMPER_LEFT)) - (controller2.analogDeadband(Controller.Button.RIGHT_TRIGGER)) + controller1.buttonSingleInt(Controller.Button.BUMPER_RIGHT));
             }
-            wrist.setPosition((controller2.buttonToggleSingle(Controller.Button.BUMPER_RIGHT)) ? 1 : -1);
+            wrist.setPosition((controller2.buttonToggleSingle(Controller.Button.BUMPER_RIGHT)) ? 1 : -1);*/
             /*if (myDrive.getAverageVelocity() < 300 || controller2.buttonToggleSingle(Controller.Button.A)) {);
             } else {wrist.setPosition(-1);}*/
 
             //scrollArm.moveExtendMagnet(controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y), -0.5*controller2.analogDeadband(Controller.Button.RIGHT_STICK_Y));
-            telemetry.addData("Extend pos: ", extender.getCurrentPosition());
-            telemetry.addData("Shoulder pos: ", scrollArm.getShoulderDist());
-            telemetry.addData("Shoulder velo: ", shoulder.getVelocity());
+            //telemetry.addData("Extend pos: ", extender.getCurrentPosition());
+            //telemetry.addData("Shoulder pos: ", scrollArm.getShoulderDist());
+            //telemetry.addData("Shoulder velo: ", shoulder.getVelocity());
 
-            plane.setPower((controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y)) ? -1.0 : 0);
-            telemetry.addData("Plane connection: ", plane.getConnectionInfo());
-            telemetry.addData("Ys pressed: ", controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y));
-            telemetry.addData("plane: ", plane.getPower());
+            //plane.setPower((controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y)) ? -1.0 : 0);
+            //telemetry.addData("Plane connection: ", plane.getConnectionInfo());
+            //telemetry.addData("Ys pressed: ", controller1.buttonCase(Controller.Button.Y) && controller2.buttonCase(Controller.Button.Y));
+            //telemetry.addData("plane: ", plane.getPower());
 
-            //Drive Control
+            /*//Drive Control
             float slow = 1 - (controller1.analogDeadband(Controller.Button.LEFT_TRIGGER) * 0.5f);
             //dpad drive
             if (controller1.buttonCase(Controller.Button.B)) {
@@ -303,6 +332,7 @@ public class RightStage extends LinearOpMode {
             else if (controller1.analogDeadband(Controller.Button.RIGHT_TRIGGER) != 0) {myDrive.setDrivePower(controller1.analogDeadband(Controller.Button.RIGHT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.RIGHT_STICK_X) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_X) * slow, emu, orientation);}
             //default to normal drive
             else {myDrive.setDrivePower(controller1.analogDeadband(Controller.Button.RIGHT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_Y) * slow, controller1.analogDeadband(Controller.Button.RIGHT_STICK_X) * slow, controller1.analogDeadband(Controller.Button.LEFT_STICK_X) * slow);}
+            */
             telemetry.update();
         }
     }

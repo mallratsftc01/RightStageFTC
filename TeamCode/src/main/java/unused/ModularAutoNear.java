@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package unused;
 
 import com.epra.Controller;
 import com.epra.DriveTrain;
@@ -18,6 +18,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.CameraPlus;
+import org.firstinspires.ftc.teamcode.DrawerSlide;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
@@ -141,7 +143,7 @@ public class ModularAutoNear extends LinearOpMode {
         });
 
         initCamera();
-        locator = new AprilTagLocator(aprilTag);
+        locator = new AprilTagLocator();
 
         //Init loop instead of wait for start
         //Module 1
@@ -286,8 +288,7 @@ public class ModularAutoNear extends LinearOpMode {
                     stepNext();*/
                     break;
                 case 13:
-                    telemetry.addData("tag: ", locator.findTag(targetTag));
-                    if (locator.findTag(targetTag)) {
+                    if (false) {
                         stepNext();
                     }
                     break;

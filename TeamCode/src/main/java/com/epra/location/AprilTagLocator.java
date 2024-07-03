@@ -11,94 +11,51 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 public class AprilTagLocator {
-    private final FieldPoint[] ID = new FieldPoint[]  {
-            new FieldPoint(0.0f, 0.0f), //Origin
-            new FieldPoint (115.25f, 137.0f),
-            new FieldPoint (109.25f, 137.0f),
-            new FieldPoint (103.25f, 137.0f),
-            new FieldPoint (40.75f, 137.0f),
-            new FieldPoint (34.75f, 137.0f),
-            new FieldPoint (28.75f, 137.0f),
-            new FieldPoint (31.0f, 0.0f),
-            new FieldPoint (37.0f, 0.0f),
-            new FieldPoint (107.0f, 0.0f),
-            new FieldPoint (113.0f, 0.0f)
-    };
 
-    private List<AprilTagDetection> currentDetections;
-    private AprilTagProcessor aprilTagProcessor;
-    private FieldPoint location;
-    int age;
+    public AprilTagLocator() {
 
-    /**Uses an AprilTagProcessor in order to estimate the location of the robot.
-     *<p></p>
-     *Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-    public AprilTagLocator (AprilTagProcessor aprilTagProcessor) {
-        this.aprilTagProcessor = aprilTagProcessor;
-        location = new FieldPoint(0.0f, 0.0f);
-        age = 0;
     }
 
-    /**Updates the detections of aprilTags only if the detections are fresh.
-     * Returns true if the detections are fresh and false if they are not*/
-    public boolean updateDetections () {
-        if (aprilTagProcessor.getFreshDetections() != null) {
-            currentDetections = aprilTagProcessor.getFreshDetections();
-            age = 0;
-            return true;
-        } else {
-            age++;
-            return false;
-        }
-    }
-    /**Returns the age of the latest detection*/
-    public int getAge () {return age;}
-    /**Returns true if any detected tag's id matches the parameterized id.*/
-    public boolean findTag (int tagID) {
-        if (updateDetections()) {
-            boolean b = false;
-            if (currentDetections != null) {
-                for (AprilTagDetection a : currentDetections) {
-                    if (a.id == tagID) {
-                        b = true;
-                        break;
-                    }
-                }
-                return b;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-    /**Updates the location of the robot by using the AprilTagProcessor and IMUStorage only if the detections are fresh.
-     * Returns true if the detections are fresh and false if they are not */
-    public boolean updateLocation(YawPitchRollAngles[] orientation, IMUExpanded imu) {
-        if (updateDetections()) {
-            FieldPoint p;
-            location.x = 0.0f;
-            location.y = 0.0f;
-            for (int ii = 0; ii < currentDetections.size(); ii++) {
-                p = ID[currentDetections.get(ii).id];
-                double hyp = Math.sqrt(Math.pow(currentDetections.get(ii).ftcPose.x, 2) + Math.pow(currentDetections.get(ii).ftcPose.y, 2));
-                double rot = (imu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES) % 90) - currentDetections.get(ii).ftcPose.yaw;
-                p.y += Math.signum(p.y * -1) * Math.abs(Math.cos(rot) * hyp);
-                p.x += (Math.signum(currentDetections.get(ii).ftcPose.x) * ((currentDetections.get(ii).id < 7) ? -1 : 1) * Math.abs(Math.sin(rot) * hyp));
-                location.x += p.x;
-                location.y += p.y;
-            }
-            location.x /= currentDetections.size();
-            location.y /= currentDetections.size();
-            return true;
-        } else {
-            return false;
-        }
-    }
-    /**Updates the location and returns the latest location in FieldPoint form*/
-    public FieldPoint getLocation (YawPitchRollAngles[] orientation, IMUExpanded imu) {
-        updateLocation(orientation, imu);
-        return location;
+    /**
+     * Calculates the location of the robot relative to an AprilTag.
+     * @param x X of a detection pose.
+     * @param y Y of a detection pose.
+     * @param c Distance from the camera to center of robot.
+     * @param a Angle of the robot in radians.
+     * @return A double array of length 2 with [x, y] coordinates of the robot relative to the AprilTag
+     */
+    public double[] relativeLocation (double x, double y, double c, double a) {
+        double[] ret = new double[2];
+        double b = (Math.PI / 2) - a;
+        ret[0] = (Math.sin(a) * x) + (Math.sin(b) * (y + c));
+        ret[1] = (Math.cos(a) * x) + (Math.cos(b) * (y + c));
+        return ret;
     }
 
+    /**
+     * Calculates the polar coordinates of the robot with an April Tag as the origin
+     * @param x X of a detection pose.
+     * @param z Z of a detection pose.
+     * @param c Distance from the camera to gyro location.
+     * @param a Angle of the robot in radians.
+     * @return A double array of length 2 with [radius, theta] coordinates.
+     */
+    public double[] relativeLocationPolar (double x, double z, double c, double a) {
+        double[] ret = new double[2];
+        ret[0] = Math.sqrt(((c + z) * (c + z)) + (x * x));
+        ret[1] = ((Math.PI / 2) - a) + Math.atan((c + z) / x);
+        return ret;
+    }
+
+    /**
+     * Converts from polar coordinates to cartesian coordinates.
+     * @param polar Polar coordinates in the form [radius, theta].
+     * @return A double array of length 2 with [x, y].
+     */
+    public double[] toCartesian (double[] polar) {
+        double ret[] = new double[2];
+        ret[0] = polar[0] * Math.cos(polar[1]);
+        ret[1] = polar[0] * Math.sin(polar[1]);
+        return ret;
+    }
 }

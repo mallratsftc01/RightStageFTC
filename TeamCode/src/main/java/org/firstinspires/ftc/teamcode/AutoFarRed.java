@@ -140,7 +140,7 @@ public class AutoFarRed extends LinearOpMode {
         });
 
         initCamera();
-        locator = new AprilTagLocator(aprilTag);
+        locator = new AprilTagLocator();
 
         //Init loop instead of wait for start
         //Module 1
