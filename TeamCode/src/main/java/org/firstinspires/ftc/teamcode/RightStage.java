@@ -253,8 +253,9 @@ public class RightStage extends LinearOpMode {
                     telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", rot.firstAngle));
                     //telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", rot.secondAngle));
                     //telemetry.addLine(String.format("Rotation Roll: %.2f degrees", rot.thirdAngle));
-                    telemetry.addData("Relative position X:", aprilTagLocator.relativeLocation(pose.x*FEET_PER_METER, pose.y*FEET_PER_METER, 0, rot.firstAngle)[0]);
-                    telemetry.addData("Relative position Y:", aprilTagLocator.relativeLocation(pose.x*FEET_PER_METER, pose.y*FEET_PER_METER, 0, rot.firstAngle)[1]);
+                    telemetry.addData("Relative position X:", aprilTagLocator.relativeLocation((pose.x + 1)*FEET_PER_METER, pose.y*FEET_PER_METER, pose.z*FEET_PER_METER,0, rot.firstAngle, rot.secondAngle)[0]);
+                    telemetry.addData("Relative position Y:", aprilTagLocator.relativeLocation((pose.x+ 1)*FEET_PER_METER, pose.y*FEET_PER_METER, pose.z*FEET_PER_METER, 0, rot.firstAngle, rot.secondAngle)[1]);
+                    telemetry.addData("Relative position Z:", aprilTagLocator.relativeLocation((pose.x+ 1)*FEET_PER_METER, pose.y*FEET_PER_METER, pose.z*FEET_PER_METER, 0, rot.firstAngle, rot.secondAngle)[2]);
                 }
             }
 

@@ -20,15 +20,19 @@ public class AprilTagLocator {
      * Calculates the location of the robot relative to an AprilTag.
      * @param x X of a detection pose.
      * @param y Y of a detection pose.
+     * @param z Z of a detection pose.
      * @param c Distance from the camera to center of robot.
-     * @param a Angle of the robot in radians.
+     * @param yaw Yaw angle of the robot relative to the AprilTag in radians.
+     * @param pitch Pitch angle of the robot relative to the AprilTag in radians.
      * @return A double array of length 2 with [x, y] coordinates of the robot relative to the AprilTag
      */
-    public double[] relativeLocation (double x, double y, double c, double a) {
-        double[] ret = new double[2];
-        double b = (Math.PI / 2) - a;
-        ret[0] = (Math.sin(a) * x) + (Math.sin(b) * (y + c));
-        ret[1] = (Math.cos(a) * x) + (Math.cos(b) * (y + c));
+    public double[] relativeLocation (double x, double y, double z, double c, double yaw, double pitch) {
+        double[] ret = new double[3];
+        double hypXY = Math.sqrt((x * x) + ((y + c) * (y + c)));
+        double hypYZ = Math.sqrt((z * z) + ((y + c) * (y + c)));
+        ret[0] = Math.sin(2 * yaw) * hypXY;
+        ret[1] = ((Math.cos(2 * yaw) * hypXY)) /* + (Math.cos(2 * pitch) * hypYZ)) / 2*/;
+        ret[2] = Math.sin(2 * pitch) * hypYZ;
         return ret;
     }
 
