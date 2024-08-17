@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.epra.*;
 import com.epra.storage.*;
 import com.epra.pipelines.*;
@@ -38,6 +39,10 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
+import com.acmerobotics.dashboard.*;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+
+@SuppressWarnings("unused")
 @TeleOp
 public class RightStage extends LinearOpMode {
     private static final int CR = 240;
@@ -91,6 +96,8 @@ public class RightStage extends LinearOpMode {
 
     //SensorStorageMaster storageMaster;
     List<LynxModule> allHubs;
+
+    FtcDashboard dashboard;
 
     long startTime;
     long timesRun;
@@ -201,6 +208,10 @@ public class RightStage extends LinearOpMode {
 
         DriveTrain myDrive = new DriveTrain(northWestMotor, northEastMotor, southWestMotor, southEastMotor, 3, emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES) + 180);
 
+        dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        FtcDashboard.getInstance().startCameraStream(aprilCam, 0);
+
         //storageMaster = new SensorStorageMaster(new DcMotorEx[]{northEastMotor, northWestMotor, southEastMotor, southWestMotor, shoulder, extender}, new TouchSensor[]{magnet}, emu);
 
         allHubs = hardwareMap.getAll(LynxModule.class);
@@ -232,6 +243,8 @@ public class RightStage extends LinearOpMode {
         waitForStart();
         startTime = System.currentTimeMillis() - 1000;
         while (opModeIsActive()) {
+            controller1.update();
+            controller2.update();
             for (LynxModule module : allHubs) {
                 module.clearBulkCache();
             }
@@ -243,33 +256,35 @@ public class RightStage extends LinearOpMode {
             aprilPipeline.getDetectionsUpdate();
             if (aprilPipeline.getLatestDetections() != null) {
                 for (AprilTagDetection detection : aprilPipeline.getLatestDetections()) {
-                    AprilTagPose pose = detection.pose;
-                    Orientation rot = Orientation.getOrientation(pose.R, AxesReference.INTRINSIC, AxesOrder.YXZ, AngleUnit.RADIANS);
+                    if (detection.id == 7) {
+                        AprilTagPose pose = detection.pose;
+                        Orientation rot = Orientation.getOrientation(pose.R, AxesReference.INTRINSIC, AxesOrder.YXZ, AngleUnit.RADIANS);
 
-                    telemetry.addLine(String.format("\nDetected tag ID=%d", detection.id));
-                    telemetry.addLine(String.format("Translation X: %.2f feet", pose.x*FEET_PER_METER));
-                    telemetry.addLine(String.format("Translation Y: %.2f feet", pose.y*FEET_PER_METER));
-                    //telemetry.addLine(String.format("Translation Z: %.2f feet", pose.z*FEET_PER_METER));
-                    telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", rot.firstAngle));
-                    //telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", rot.secondAngle));
-                    //telemetry.addLine(String.format("Rotation Roll: %.2f degrees", rot.thirdAngle));
-                    telemetry.addData("Relative position X:", aprilTagLocator.relativeLocation((pose.x + 1)*FEET_PER_METER, pose.y*FEET_PER_METER, pose.z*FEET_PER_METER,0, rot.firstAngle, rot.secondAngle)[0]);
-                    telemetry.addData("Relative position Y:", aprilTagLocator.relativeLocation((pose.x+ 1)*FEET_PER_METER, pose.y*FEET_PER_METER, pose.z*FEET_PER_METER, 0, rot.firstAngle, rot.secondAngle)[1]);
-                    telemetry.addData("Relative position Z:", aprilTagLocator.relativeLocation((pose.x+ 1)*FEET_PER_METER, pose.y*FEET_PER_METER, pose.z*FEET_PER_METER, 0, rot.firstAngle, rot.secondAngle)[2]);
+                        telemetry.addData("\nDetected tag ID=", detection.id);
+                        telemetry.addData("Translation X (feet): ", pose.x * FEET_PER_METER);
+                        telemetry.addData("Translation Y (feet): ", pose.y * FEET_PER_METER);
+                        //telemetry.addLine(String.format("Translation Z: %.2f feet", pose.z*FEET_PER_METER));
+                        telemetry.addData("Rotation Yaw (degrees): ", rot.firstAngle * 180 / Math.PI);
+                        //telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", rot.secondAngle));
+                        //telemetry.addLine(String.format("Rotation Roll: %.2f degrees", rot.thirdAngle));
+                        telemetry.addData("Relative position X:", aprilTagLocator.relativeLocation((pose.x) * FEET_PER_METER, pose.y * FEET_PER_METER, pose.z * FEET_PER_METER, 0, rot.firstAngle, rot.secondAngle)[0]);
+                        telemetry.addData("Relative position Y:", aprilTagLocator.relativeLocation((pose.x) * FEET_PER_METER, pose.y * FEET_PER_METER, pose.z * FEET_PER_METER, 0, rot.firstAngle, rot.secondAngle)[1]);
+                        telemetry.addData("Relative position Z:", aprilTagLocator.relativeLocation((pose.x) * FEET_PER_METER, pose.y * FEET_PER_METER, pose.z * FEET_PER_METER, 0, rot.firstAngle, rot.secondAngle)[2]);
+                    }
                 }
             }
 
-            telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
-            telemetry.addData("Pitch: ", emu.avgIMU(orientation, IMUExpanded.PITCH, AngleUnit.DEGREES));
-            telemetry.addData("Roll: ", emu.avgIMU(orientation, IMUExpanded.ROLL, AngleUnit.DEGREES));
+            //telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
+            //telemetry.addData("Pitch: ", emu.avgIMU(orientation, IMUExpanded.PITCH, AngleUnit.DEGREES));
+            //telemetry.addData("Roll: ", emu.avgIMU(orientation, IMUExpanded.ROLL, AngleUnit.DEGREES));
             //gps.updatePositionGeneral();
             //telemetry.addData("label: ", cam.getLabel(0));
             //telemetry.addData("Num Recogs: ", cam.numRecognitions());
             //telemetry.addData("ID: ", cam.getID(0));
             //telemetry.addData("Yaw: ", storageMaster.imuStorage.avgIMU(IMUExpanded.YAW, AngleUnit.DEGREES));
-            telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
-            telemetry.addData("Times Looped", ++timesRun);
-            telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime) / 1000.0));
+            //telemetry.addData("Time Since Start", System.currentTimeMillis() - startTime);
+            //telemetry.addData("Times Looped", ++timesRun);
+            //telemetry.addData("Loops per Second", timesRun / ((System.currentTimeMillis() - startTime) / 1000.0));
             //arm controls
             double shoulderPow = 0.0;
             /*switch (controller2.buttonCounterSingle(Controller.Button.B, 2)) {

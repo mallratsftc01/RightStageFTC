@@ -32,6 +32,7 @@ public class Controller extends Gamepad {
         private Key(int num) { this.num = num; }
     }
 
+    /**A map containing all of the buttons and corresponding keys.*/
     public Map<Key, Button> map = new HashMap<>();
 
     private float deadband = 0.0f;
@@ -59,6 +60,8 @@ public class Controller extends Gamepad {
      * If the method is called while the button is released it will reset.
      * <p>
      * Toggle - A boolean separate from the button that can be changed with or without button input.
+     * @param deadbandIn The starting deadband range.
+     * @param g The gamepad this controller instance will extend.
      * */
     public Controller(Gamepad g, float deadbandIn) {
         gamepad = g;
@@ -100,29 +103,46 @@ public class Controller extends Gamepad {
         map.get(Key.RIGHT_STICK_Y).update(gamepad.right_stick_y);
     }
 
-    /**Returns the float value of an analog.*/
+    /**Returns the float value of an analog.
+     * @param analog Corresponding key for analog.*/
     public float getAnalog(Key analog) { return map.get(analog).toFloat(); }
-    /**Returns the boolean value of a button.*/
+    /**Returns the boolean value of a button.
+     * @param button Corresponding key for button.*/
     public boolean getButton(Key button) { return map.get(button).toBoolean(); }
+    /**Returns the value of a button and an int.
+     * @param button Corresponding key for button.*/
+    public int getButtonInt(Key button) { return boolToInt(getButton(button)); }
 
-    /**Sets deadband limit for joysticks and triggers.*/
+    /**Sets deadband limit for joysticks and triggers.
+     * @param d Deadband range.*/
     public void setDeadband(float d) { deadband = d; }
     /**Returns deadband limit for joysticks and triggers.*/
     public float getDeadband() { return deadband; }
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
+    /**Returns 0 if in the deadband range, if not returns as normal.
+     * @param analog Corresponding key for analog.*/
     public float analogDeadband(Key analog) { return (Math.abs(map.get(analog).toFloat()) > deadband) ? map.get(analog).toFloat() : 0.0F; }
-    /**Returns 0 if in the deadband range, if not returns as normal.*/
+    /**Returns 0 if in the deadband range, if not returns as normal.
+     * @param analog Corresponding key for analog.
+     * @param deadbandIn Deadband range.*/
     public float analogDeadband(Key analog, float deadbandIn) { return (Math.abs(map.get(analog).toFloat()) > deadbandIn) ? map.get(analog).toFloat() : 0.0F; }
-    /**Returns the value raised to the power of the input.*/
+    /**Returns the value raised to the power of the input.
+     * @param analog Corresponding key for analog.
+     * @param power Power to be raised to.*/
     public float analogPower(Key analog, int power) { return Math.signum(map.get(analog).toFloat() * (float)Math.pow(Math.abs(map.get(analog).toFloat()), power)); }
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
+    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.
+     * @param analog Corresponding key for analog.
+     * @param power to be raised to.*/
     public float analogPowerDeadband(Key analog, int power) { return (Math.abs(analogPower(analog, power)) > deadband) ? analogPower(analog, power) : 0.0F; }
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.*/
+    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.
+     * @param analog Corresponding key for analog.
+     * @param power Power to be raised to.
+     * @param deadbandIn Deadband range.*/
     public float analogPowerDeadband(Key analog, int power, int deadbandIn) { return (Math.abs(analogPower(analog, power)) > deadbandIn) ? analogPower(analog, power) : 0.0F; }
 
     /**Returns a true output only on the first call while a button is pressed.
      * If the method is called again while the button is still pressed, the return will be false.
-     * If the method is called while the button is released it will reset.*/
+     * If the method is called while the button is released it will reset.
+     * @param button Corresponding key for button.*/
     public boolean buttonSingle(Key button) {
         boolean r = false;
         if (map.get(button).toBoolean()) {
@@ -135,64 +155,83 @@ public class Controller extends Gamepad {
         }
         return r;
     }
-    /**Returns the output of buttonSingle as an int.*/
+    /**Returns the output of buttonSingle as an int.
+     * @param button Corresponding key for button.*/
     public int buttonSingleInt(Key button) {return boolToInt(buttonSingle(button));}
     /**Will change the state of the toggle if the button is pressed.
-     * Returns the new state of the toggle.*/
+     * Returns the new state of the toggle.
+     * @param button Corresponding key for button.*/
     public boolean buttonToggle(Key button) {
         if (map.get(button).toBoolean()) {
             map.get(button).toggle = !(map.get(button).toggle);
         }
         return map.get(button).toggle;
     }
-    /**Returns the output of buttonToggle as an Integer*/
+    /**Returns the output of buttonToggle as an int.
+     * @param button Corresponding key for button.*/
     public int buttonToggleInt(Key button) {return boolToInt(buttonToggle(button));}
     /**Will change the state of the toggle if the button is pressed following the rules of buttonSingle.
-     * Returns the new state of the toggle.*/
+     * Returns the new state of the toggle.
+     * @param button Corresponding key for button.*/
     public boolean buttonToggleSingle(Key button) {
         if (buttonSingle(button)) {
             map.get(button).toggle = !(map.get(button).toggle);
         }
         return map.get(button).toggle;
     }
-    /**Returns the output of buttonToggleSingle as an Integer*/
+    /**Returns the output of buttonToggleSingle as an int.
+     * @param button Corresponding key for button.*/
     public int buttonToggleSingleInt(Key button) {return boolToInt(buttonToggleSingle(button));}
     /**Will change the state of the toggle regardless of the state of the button.
-     * Returns the new state of the toggle.*/
+     * Returns the new state of the toggle.
+     * @param button Corresponding key for button.*/
     public boolean flipToggle(Key button) {
         map.get(button).toggle = !(map.get(button).toggle);
         return map.get(button).toggle;
     }
-    /**Returns the state of the toggle without changing the state of the toggle.*/
+    /**Returns the state of the toggle without changing the state of the toggle.
+     * @param button Corresponding key for button.*/
     public boolean getToggle(Key button) {
         return map.get(button).toggle;
     }
-    /**Returns the output of getToggle as an Integer*/
+    /**Returns the output of getToggle as an int.
+     * @param button Corresponding key for button.*/
     public int getToggleInt(Key button) {return boolToInt(buttonToggleSingle(button));}
-    /**If the counter is more than or equal to max it will be reset and return zero. If not, the counter will increase by one and return the result.*/
+    /**If the counter is more than or equal to max it will be reset and return zero. If not, the counter will increase by one and return the result.
+     * @param button Corresponding key for button.
+     * @param max The maximum value of the counter.*/
     public int buttonCounter(Key button, int max) {
         if (map.get(button).toBoolean()) {
             map.get(button).counter = (map.get(button).counter + 1) % max;
         }
         return map.get(button).counter;
     }
-    /**Will perform the same action as buttonCounter but follows the rules of buttonSingle.*/
+    /**Will perform the same action as buttonCounter but follows the rules of buttonSingle.
+     * @param button Corresponding key for button.
+     * @param max The maximum value of the counter.*/
     public int buttonCounterSingle(Key button, int max) {
         if (buttonSingle(button)) {
             map.get(button).counter = (map.get(button).counter + 1) % max;
         }
         return map.get(button).counter;
     }
-    /**Will increase the counter of a certain button by a certain amount. If the counter goes over max, it will reset and overflow. Returns the new value of the counter.*/
+    /**Will increase the counter of a certain button by a certain amount. If the counter goes over max, it will reset and overflow. Returns the new value of the counter.
+     * @param button Corresponding key for button.
+     * @param max The maximum value of the counter.
+     * @param increase The amount by which the counter will increase.*/
     public int increaseCounter(Key button, int max, int increase) {
         map.get(button).counter = (map.get(button).counter + increase + max) % max;
         return map.get(button).counter;
     }
-    /**Will set the counter to a certain number.*/
+    /**Will set the counter to a certain number.
+     * @param button Corresponding key for button.
+     * @param set The value to set the counter to.*/
     public void setCounter(Key button, int set) { map.get(button).counter = set; }
-    /**Returns the current value of the counter*/
+    /**Returns the current value of the counter.
+     * @param button Corresponding key for button.*/
     public int getCounter(Key button) { return map.get(button).counter; }
 
-    /**If true will return 1, if false will return 0.*/
+    /**If true will return 1, if false will return 0.
+     * @param b The input boolean.*/
     public int boolToInt(boolean b) {return (b) ? 1 : 0;}
 }
