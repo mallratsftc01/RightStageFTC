@@ -1,5 +1,4 @@
 package com.epra;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -7,35 +6,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Controller extends Gamepad {
-    Gamepad gamepad = new Gamepad();
-    public static enum Key {
-        A (0),
-        B (1),
-        X (2),
-        Y (3),
-        UP (4),
-        DOWN (5),
-        LEFT (6),
-        RIGHT (7),
-        BUMPER_LEFT (8),
-        BUMPER_RIGHT (9),
-        STICK_LEFT (10),
-        STICK_RIGHT (11),
-        LEFT_STICK_X (12),
-        RIGHT_STICK_X (13),
-        LEFT_STICK_Y (14),
-        RIGHT_STICK_Y (15),
-        LEFT_TRIGGER (16),
-        RIGHT_TRIGGER (17);
+    Gamepad gamepad;
+    public enum Key {
+        A,
+        B,
+        X,
+        Y,
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT,
+        BUMPER_LEFT,
+        BUMPER_RIGHT,
+        STICK_LEFT,
+        STICK_RIGHT,
+        LEFT_STICK_X,
+        RIGHT_STICK_X,
+        LEFT_STICK_Y,
+        RIGHT_STICK_Y,
+        LEFT_TRIGGER,
+        RIGHT_TRIGGER;
 
-        int num;
-        private Key(int num) { this.num = num; }
+        Key() {}
     }
 
     /**A map containing all of the buttons and corresponding keys.*/
     public Map<Key, Button> map = new HashMap<>();
 
-    private float deadband = 0.0f;
+    private float deadband;
 
     /**Extends the Gamepad Class.
      * <p></p>
