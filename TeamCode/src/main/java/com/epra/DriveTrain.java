@@ -19,6 +19,11 @@ import java.util.TimerTask;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
+ * <p></p>
+ * Coordinates motors in order to create cohesive robot motion.
+ * This class can be used for a variable number of motors for several drive types.*/
 public class DriveTrain {
     /**All the orientations a motor can be in relative to the DriveTrain.*/
     public enum Orientation {

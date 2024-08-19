@@ -4,9 +4,32 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.util.HashMap;
 import java.util.Map;
-
+/**Extends the Gamepad Class.
+ * <p></p>
+ * Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
+ * <p></p>
+ * Introduces new functionality to joysticks, triggers, and buttons.
+ * <p></p>
+ * Joysticks and Triggers:
+ * <p>
+ * Joysticks and Triggers return float values. Joysticks return values between -1.0 and 1.0. Triggers return values between 0.0 and 1.0.
+ * <p>
+ * Deadbanding - A range from the negative value of deadband to the positive value of deadband. If a joystick or trigger's output is withing this range, the output will be set to 0.
+ * <p>
+ * Pow - Will return the joystick or trigger's output raised to a certain power.
+ * <p></p>
+ * Buttons:
+ * <p>
+ * Buttons return boolean values
+ * <p>
+ * Single Press - Returns a true output only on the first call while a button is pressed.
+ * If the method is called again while the button is still pressed, the return will be false.
+ * If the method is called while the button is released it will reset.
+ * <p>
+ * Toggle - A boolean separate from the button that can be changed with or without button input.*/
 public class Controller extends Gamepad {
     Gamepad gamepad;
+    /**An enum to store all the buttons and analogs.*/
     public enum Key {
         A,
         B,
