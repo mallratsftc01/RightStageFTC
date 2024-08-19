@@ -26,7 +26,7 @@ import java.util.Map;
  * This class can be used for a variable number of motors for several drive types.*/
 public class DriveTrain {
     /**All the orientations a motor can be in relative to the DriveTrain.*/
-    public enum Orientation {
+    public static enum Orientation {
         RIGHT,
         LEFT,
         FRONT,
@@ -84,7 +84,7 @@ public class DriveTrain {
     }
 
     /**All of the drive types currently available.*/
-    public enum DriveType {
+    public static enum DriveType {
         TANK,
         ARCADE,
         ZACHARIAN,

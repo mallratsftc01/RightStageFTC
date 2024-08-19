@@ -28,11 +28,9 @@ public class AprilTagLocator {
      */
     public double[] relativeLocation (double x, double y, double z, double c, double yaw, double pitch) {
         double[] ret = new double[3];
-        double hypXY = Math.sqrt((x * x) + ((y + c) * (y + c)));
-        double hypYZ = Math.sqrt((z * z) + ((y + c) * (y + c)));
-        ret[0] = Math.sin(2 * yaw) * hypXY;
-        ret[1] = ((Math.cos(2 * yaw) * hypXY)) /* + (Math.cos(2 * pitch) * hypYZ)) / 2*/;
-        ret[2] = Math.sin(2 * pitch) * hypYZ;
+        ret[0] = Math.tan(yaw) / y;
+        ret[1] = y;
+        ret[2] = Math.tan(pitch) / y;
         return ret;
     }
 
