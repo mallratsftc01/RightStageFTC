@@ -13,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -326,5 +327,23 @@ public class DriveTrain {
         for (Map.Entry<String, Double> entry : power.entrySet()) {
             motor.get(entry.getKey()).setPower(entry.getValue());
         }
+    }
+
+    /**Updates all the pos values in the pos map.*/
+    private void updatePos() {
+        for (Map.Entry<String, DcMotorEx> entry : motor.entrySet()) {
+            pos.replace(entry.getKey(), entry.getValue().getCurrentPosition());
+        }
+    }
+    /**@param motorName The name of the motor to search for.
+     * @return The position of the specified motor.*/
+    private int getPos(String motorName) {
+        updatePos();
+        return pos.get(motorName);
+    }
+    /**@return A set of all motor names and their positions.*/
+    private Set<Map.Entry<String, Integer>> getPos() {
+        updatePos();
+        return pos.entrySet();
     }
 }
