@@ -2,13 +2,11 @@ package com.epra.location;
 
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.epra.Controller;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.CameraPlus;
+import com.epra.CameraPlus;
 
 public class LocationServices {
     private final float ID_6_X = 28.75f;

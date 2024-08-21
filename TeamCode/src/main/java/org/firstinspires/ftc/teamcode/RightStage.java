@@ -42,7 +42,6 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import com.acmerobotics.dashboard.*;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
-@SuppressWarnings("unused")
 @TeleOp
 public class RightStage extends LinearOpMode {
     private static final int CR = 240;

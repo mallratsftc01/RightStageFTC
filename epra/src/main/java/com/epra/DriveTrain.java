@@ -5,17 +5,12 @@ import androidx.annotation.NonNull;
 import com.epra.storage.IMUStorage;
 import com.epra.storage.SensorStorageMaster;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
-import java.util.ArrayList;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -330,19 +325,19 @@ public class DriveTrain {
     }
 
     /**Updates all the pos values in the pos map.*/
-    private void updatePos() {
+    public void updatePos() {
         for (Map.Entry<String, DcMotorEx> entry : motor.entrySet()) {
             pos.replace(entry.getKey(), entry.getValue().getCurrentPosition());
         }
     }
     /**@param motorName The name of the motor to search for.
      * @return The position of the specified motor.*/
-    private int getPos(String motorName) {
+    public int getPos(String motorName) {
         updatePos();
         return pos.get(motorName);
     }
     /**@return A set of all motor names and their positions.*/
-    private Set<Map.Entry<String, Integer>> getPos() {
+    public Set<Map.Entry<String, Integer>> getPos() {
         updatePos();
         return pos.entrySet();
     }
