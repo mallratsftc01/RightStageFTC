@@ -30,7 +30,7 @@ public class Vector extends Angle {
     /**Stores an length, theta vector.
      *<p></p>
      *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.
-     * @param point*/
+     * @param point Point at the end of the vector.*/
     public Vector(Point point) {
         super((float) Math.atan(point.x / point.y));
         this.length = Geometry.pythagorean(point.x, point.y);
@@ -40,6 +40,12 @@ public class Vector extends Angle {
     public double getLength() { return length; }
     /**@param length The new length of the vector.*/
     public void setLength(double length) { this.length = length; }
+
+    /**@param point Point at the end of the vector.*/
+    public void setPoint(Point point) {
+        super.setRadian(Math.atan(point.x / point.y));
+        this.length = Geometry.pythagorean(point.x, point.y);
+    }
 
     /**@return The vector converted to an x, y coordinate point/*/
     public Point toPoint() { return new Point(Math.cos(super.getRadian()) * length, Math.sin(super.getRadian()) * length); }
