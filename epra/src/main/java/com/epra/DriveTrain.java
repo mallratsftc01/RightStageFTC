@@ -2,6 +2,7 @@ package com.epra;
 
 import androidx.annotation.NonNull;
 
+import com.epra.math.geometry.Vector;
 import com.epra.storage.IMUStorage;
 import com.epra.storage.SensorStorageMaster;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -15,6 +16,8 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.epra.math.geometry.Angle;
+
 /**
  * Queer Coded by Zachy K. If you use this class or a method from this class in its entirety, please make sure to give credit.
  * <p></p>
@@ -23,16 +26,18 @@ import java.util.Map;
 public class DriveTrain {
     /**All the orientations a motor can be in relative to the DriveTrain.*/
     public static enum Orientation {
-        RIGHT,
-        LEFT,
-        FRONT,
-        BACK,
-        RIGHT_FRONT,
-        RIGHT_BACK,
-        LEFT_FRONT,
-        LEFT_BACK,
+        RIGHT (new Angle(0.0)),
+        LEFT (new Angle(0.0)),
+        FRONT (new Angle(90.0)),
+        BACK (new Angle(90.0)),
+        RIGHT_FRONT (new Angle(315.0)),
+        RIGHT_BACK (new Angle(45.0)),
+        LEFT_FRONT (new Angle(45.0)),
+        LEFT_BACK (new Angle(315.0));
 
-        Orientation() {};
+        Angle angle;
+
+        Orientation(Angle a) { angle = a;};
 
         /**
          * @param o Orientation to be tested.
