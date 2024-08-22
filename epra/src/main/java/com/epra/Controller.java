@@ -1,5 +1,8 @@
 package com.epra;
 
+import com.epra.math.geometry.Angle;
+import com.epra.math.geometry.Point;
+import com.epra.math.geometry.Vector;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.util.HashMap;
@@ -52,9 +55,15 @@ public class Controller extends Gamepad {
 
         Key() {}
     }
+    /**An enum to store both joysticks.*/
+    public enum Stick {
+        RIGHT_STICK,
+        LEFT_STICK
+    }
 
     /**A map containing all of the buttons and corresponding keys.*/
     public Map<Key, Button> map = new HashMap<>();
+    public Map<Stick, Vector> stick = new HashMap<>();
 
     private float deadband;
 
@@ -103,6 +112,8 @@ public class Controller extends Gamepad {
         map.put(Key.RIGHT_STICK_X, new Button(gamepad.right_stick_x));
         map.put(Key.LEFT_STICK_Y, new Button(gamepad.left_stick_y));
         map.put(Key.RIGHT_STICK_Y, new Button(gamepad.right_stick_y));
+        stick.put(Stick.RIGHT_STICK, new Vector(map.get(Key.RIGHT_STICK_X).toFloat(), map.get(Key.RIGHT_STICK_Y).toFloat()));
+        stick.put(Stick.LEFT_STICK, new Vector(map.get(Key.LEFT_STICK_X).toFloat(), map.get(Key.LEFT_STICK_Y).toFloat()));
     }
     /**Updates the button values in the map.*/
     public void update() {
@@ -122,11 +133,16 @@ public class Controller extends Gamepad {
         map.get(Key.RIGHT_STICK_X).update(gamepad.right_stick_x);
         map.get(Key.LEFT_STICK_Y).update(gamepad.left_stick_y);
         map.get(Key.RIGHT_STICK_Y).update(gamepad.right_stick_y);
+        stick.get(Stick.RIGHT_STICK).setPoint(new Point(map.get(Key.RIGHT_STICK_X).toFloat(), map.get(Key.RIGHT_STICK_Y).toFloat()));
+        stick.get(Stick.LEFT_STICK).setPoint(new Point(map.get(Key.LEFT_STICK_X).toFloat(), map.get(Key.LEFT_STICK_Y).toFloat()));
     }
 
     /**Returns the float value of an analog.
      * @param analog Corresponding key for analog.*/
     public float getAnalog(Key analog) { return map.get(analog).toFloat(); }
+    /**@param joystick Corresponding stick for joystick.
+     * @return The vector associated with the stick.*/
+    public Vector getAnalog(Stick joystick) { return stick.get(joystick); }
     /**Returns the boolean value of a button.
      * @param button Corresponding key for button.*/
     public boolean getButton(Key button) { return map.get(button).toBoolean(); }
@@ -142,23 +158,49 @@ public class Controller extends Gamepad {
     /**Returns 0 if in the deadband range, if not returns as normal.
      * @param analog Corresponding key for analog.*/
     public float analogDeadband(Key analog) { return (Math.abs(map.get(analog).toFloat()) > deadband) ? map.get(analog).toFloat() : 0.0F; }
+    /**@param joystick Corresponding stick for joystick.
+     * @return The vector associated with the stick, length is set to 0 if it was within the deadband range.*/
+    public Vector analogDeadband(Stick joystick) { return (Math.abs(stick.get(joystick).getLength()) > deadband) ? stick.get(joystick) : new Vector(0.0,0.0); }
     /**Returns 0 if in the deadband range, if not returns as normal.
      * @param analog Corresponding key for analog.
      * @param deadbandIn Deadband range.*/
     public float analogDeadband(Key analog, float deadbandIn) { return (Math.abs(map.get(analog).toFloat()) > deadbandIn) ? map.get(analog).toFloat() : 0.0F; }
+    /**@param joystick Corresponding stick for joystick.
+     * @param deadbandIn Deadband range.
+     * @return The vector associated with the stick, length is set to 0 if it was within the deadband range.*/
+    public Vector analogDeadband(Stick joystick, float deadbandIn) { return (Math.abs(stick.get(joystick).getLength()) > deadbandIn) ? stick.get(joystick) : new Vector(0.0,0.0); }
     /**Returns the value raised to the power of the input.
      * @param analog Corresponding key for analog.
      * @param power Power to be raised to.*/
-    public float analogPower(Key analog, int power) { return Math.signum(map.get(analog).toFloat() * (float)Math.pow(Math.abs(map.get(analog).toFloat()), power)); }
+    public float analogPower(Key analog, float power) { return Math.signum(map.get(analog).toFloat() * (float)Math.pow(Math.abs(map.get(analog).toFloat()), power)); }
+    /**@param joystick Corresponding stick for joystick
+     * @param power The power to be raised to.
+     * @return The vector associated with the stick, length raised to the power.*/
+    public Vector analogPower(Stick joystick, float power) { return new Vector(Math.signum(stick.get(joystick).getLength() * (float)Math.pow(Math.abs(stick.get(joystick).getLength()), power)), (Angle) stick.get(joystick)); }
     /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.
      * @param analog Corresponding key for analog.
      * @param power to be raised to.*/
-    public float analogPowerDeadband(Key analog, int power) { return (Math.abs(analogPower(analog, power)) > deadband) ? analogPower(analog, power) : 0.0F; }
+    public float analogPowerDeadband(Key analog, float power) { return (Math.abs(analogPower(analog, power)) > deadband) ? analogPower(analog, power) : 0.0F; }
+    /**@param joystick Corresponding stick for joystick
+     * @param power The power to be raised to.
+     * @return The vector associated with the stick, length raised to the power.*/
+    public Vector analogPowerDeadband(Stick joystick, float power) {
+        Vector v = new Vector(Math.signum(stick.get(joystick).getLength() * (float)Math.pow(Math.abs(stick.get(joystick).getLength()), power)), (Angle) stick.get(joystick));
+        return (Math.abs(v.getLength()) > deadband) ? v : new Vector(0,0);
+    }
     /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.
      * @param analog Corresponding key for analog.
      * @param power Power to be raised to.
      * @param deadbandIn Deadband range.*/
-    public float analogPowerDeadband(Key analog, int power, int deadbandIn) { return (Math.abs(analogPower(analog, power)) > deadbandIn) ? analogPower(analog, power) : 0.0F; }
+    public float analogPowerDeadband(Key analog, float power, float deadbandIn) { return (Math.abs(analogPower(analog, power)) > deadbandIn) ? analogPower(analog, power) : 0.0F; }
+    /**@param joystick Corresponding stick for joystick
+     * @param power The power to be raised to.
+     * @param deadbandIn Deadband range.
+     * @return The vector associated with the stick, length raised to the power.*/
+    public Vector analogPowerDeadband(Stick joystick, float power, float deadbandIn) {
+        Vector v = new Vector(Math.signum(stick.get(joystick).getLength() * (float)Math.pow(Math.abs(stick.get(joystick).getLength()), power)), (Angle) stick.get(joystick));
+        return (Math.abs(v.getLength()) > deadbandIn) ? v : new Vector(0,0);
+    }
 
     /**Returns a true output only on the first call while a button is pressed.
      * If the method is called again while the button is still pressed, the return will be false.
