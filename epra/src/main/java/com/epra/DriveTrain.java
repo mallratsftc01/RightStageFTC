@@ -2,6 +2,7 @@ package com.epra;
 
 import androidx.annotation.NonNull;
 
+import com.epra.math.geometry.Geometry;
 import com.epra.math.geometry.Vector;
 import com.epra.storage.IMUStorage;
 import com.epra.storage.SensorStorageMaster;
@@ -345,5 +346,18 @@ public class DriveTrain {
     public Set<Map.Entry<String, Integer>> getPos() {
         updatePos();
         return pos.entrySet();
+    }
+
+    /**@param motorName The name of the motor.
+     * @return The vector of motion of the motor.*/
+    public Vector motorVector(String motorName) { return new Vector(power.get(motorName), orientation.get(motorName).angle); }
+
+    /**@return The vector of motion of the DriveTrain as a combination of the vectors of motion of all the motors.*/
+    public Vector driveTrainVector() {
+        Vector v = new Vector(0, 0);
+        for (Map.Entry<String, DcMotorEx> entry : motor.entrySet()) {
+            v = Geometry.add(v, motorVector(entry.getKey()));
+        }
+        return v;
     }
 }
