@@ -141,4 +141,8 @@ public class Triangle {
         angleB.setRadian(Math.acos((Math.pow(aLen,2) + Math.pow(cLen,2) - Math.pow(bLen,2)) / 2 * aLen * cLen));
         angleC.setDegree(180.0 - (this.angleA.getDegree() + this.angleB.getDegree()));
     }
+
+    /**@param point Point to check.
+     * @return True if the point is within the triangle, false if not.*/
+    public boolean checkPoint(Point point) { return (new Triangle(a, b, point).getArea() + new Triangle(b, c, point).getArea() + new Triangle(c, a, point).getArea() == this.getArea()); }
 }
