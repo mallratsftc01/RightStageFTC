@@ -50,4 +50,15 @@ public class Geometry {
      * @param b Length of leg b.
      * @return The length of the hypotenuse of a triangle with legs a and b.*/
     public static double pythagorean(double a, double b) { return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)); }
+
+    /**@param angle1 First angle.
+     * @param angle2 Second angle.
+     * @return The direction for the first angle to reach the second angle the quickest (1.0 is clockwise, -1.0 is counterclockwise).*/
+    public static double direction(Angle angle1, Angle angle2) {
+        double sign = Math.signum(angle1.getDegree() - angle2.getDegree());
+        if (Math.max(angle1.getDegree(), angle2.getDegree()) > 270 && Math.min(angle1.getDegree(), angle2.getDegree()) < 90) {
+            sign *= -1;
+        }
+        return sign;
+    }
 }

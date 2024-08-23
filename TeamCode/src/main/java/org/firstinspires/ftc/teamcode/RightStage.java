@@ -273,6 +273,7 @@ public class RightStage extends LinearOpMode {
                 }
             }
 
+            myDrive.setDrivePower(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Key.LEFT_STICK_X), controller1.analogDeadband(Controller.Key.RIGHT_STICK_Y), controller1.analogDeadband(Controller.Key.LEFT_STICK_Y));
             //telemetry.addData("Yaw: ", emu.avgIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES));
             //telemetry.addData("Pitch: ", emu.avgIMU(orientation, IMUExpanded.PITCH, AngleUnit.DEGREES));
             //telemetry.addData("Roll: ", emu.avgIMU(orientation, IMUExpanded.ROLL, AngleUnit.DEGREES));
