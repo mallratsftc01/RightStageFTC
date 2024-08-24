@@ -3,7 +3,7 @@ package com.epra.math.geometry;
 /**A class that adds many geometric functions for many uses.
  *<p></p>
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-public class Geometry extends Shape2D {
+public class Geometry {
     /**A unit vector pointing to the right.*/
     public static final Vector I_HAT = new Vector(1, new Angle(0.0));
     /**A unit vector pointing upwards.*/

@@ -27,7 +27,7 @@ import java.util.Map;
  * <p>
  * Single Press - Returns a true output only on the first call while a button is pressed.
  * If the method is called again while the button is still pressed, the return will be false.
- * If the method is called while the button is released it will reset.
+ * If the method is called while the button is released it will clear.
  * <p>
  * Toggle - A boolean separate from the button that can be changed with or without button input.*/
 public class Controller extends Gamepad {
@@ -87,7 +87,7 @@ public class Controller extends Gamepad {
      * <p>
      * Single Press - Returns a true output only on the first call while a button is pressed.
      * If the method is called again while the button is still pressed, the return will be false.
-     * If the method is called while the button is released it will reset.
+     * If the method is called while the button is released it will clear.
      * <p>
      * Toggle - A boolean separate from the button that can be changed with or without button input.
      * @param deadbandIn The starting deadband range.
@@ -204,7 +204,7 @@ public class Controller extends Gamepad {
 
     /**Returns a true output only on the first call while a button is pressed.
      * If the method is called again while the button is still pressed, the return will be false.
-     * If the method is called while the button is released it will reset.
+     * If the method is called while the button is released it will clear.
      * @param button Corresponding key for button.*/
     public boolean buttonSingle(Key button) {
         boolean r = false;
@@ -260,7 +260,7 @@ public class Controller extends Gamepad {
     /**Returns the output of getToggle as an int.
      * @param button Corresponding key for button.*/
     public int getToggleInt(Key button) {return boolToInt(buttonToggleSingle(button));}
-    /**If the counter is more than or equal to max it will be reset and return zero. If not, the counter will increase by one and return the result.
+    /**If the counter is more than or equal to max it will be clear and return zero. If not, the counter will increase by one and return the result.
      * @param button Corresponding key for button.
      * @param max The maximum value of the counter.*/
     public int buttonCounter(Key button, int max) {
@@ -278,7 +278,7 @@ public class Controller extends Gamepad {
         }
         return map.get(button).counter;
     }
-    /**Will increase the counter of a certain button by a certain amount. If the counter goes over max, it will reset and overflow. Returns the new value of the counter.
+    /**Will increase the counter of a certain button by a certain amount. If the counter goes over max, it will clear and overflow. Returns the new value of the counter.
      * @param button Corresponding key for button.
      * @param max The maximum value of the counter.
      * @param increase The amount by which the counter will increase.*/

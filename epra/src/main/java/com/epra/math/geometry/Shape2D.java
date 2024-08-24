@@ -1,4 +1,8 @@
 package com.epra.math.geometry;
 
-public class Shape2D {
+public interface Shape2D {
+
+    public double getArea();
+
+    public boolean checkPoint(Point point);
 }

@@ -2,7 +2,7 @@ package com.epra.math.geometry;
 /**Stores a triangle with points a, b, c.
  *<p></p>
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-public class Triangle {
+public class Triangle implements Shape2D{
 
     private Point a,b,c;
     private Angle angleA, angleB, angleC;
@@ -129,6 +129,7 @@ public class Triangle {
 
     /**@return The area of the triangle.*/
     public double getArea() { return (getBC() * getCA() * Math.sin(angleC.getRadian())) / 2; }
+
     /**@return The perimeter of the triangle.*/
     public double getPerimeter() { return getAB() + getBC() + getCA(); }
 
