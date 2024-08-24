@@ -2,7 +2,7 @@ package com.epra.math.geometry;
 /**Stores a full or partial circle.
  *<p></p>
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-public class Circle {
+public class Circle extends Shape2D {
 
     private Point center;
     private double radius;
