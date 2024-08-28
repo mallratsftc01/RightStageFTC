@@ -23,9 +23,19 @@ public class RollingAverage {
         Bias(BiasPointer pointer) { this.use = pointer; }
     }
 
+    public enum Threshold {
+        NO_CHANGE,
+        NO_CHANGE_ZERO,
+        NO_CHANGE_AVERAGE,
+        NONE,
+    }
+
     private ArrayList<Double> buffer;
+    private ArrayList<Double> averageBuffer;
     private int bufferSize;
     private Bias biasType;
+    private int autoClearThreshold;
+    private Threshold thresholdType;
 
     /**A rolling average of values stored in a buffer.
      *<p></p>
@@ -37,14 +47,42 @@ public class RollingAverage {
      * @param biasType Type of bias to use in averages.*/
     public RollingAverage(int bufferSize, Bias biasType) {
         buffer = new ArrayList<Double>();
+        averageBuffer = new ArrayList<Double>();
         this.bufferSize = bufferSize;
         this.biasType = biasType;
+        this.autoClearThreshold = 0;
+        this.thresholdType = Threshold.NONE;
+    }
+
+    /**A rolling average of values stored in a buffer.
+     *<p></p>
+     *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.
+     * <p></p>
+     * This class is intended for use sensors that give sometimes unreliable outputs. This average should flatten out any outliers.
+     * The average can be biased towards more recent values so that actual movement is preserved.
+     * @param bufferSize Size of the buffer.
+     * @param biasType Type of bias to use in averages.
+     * @param thresholdType The type of auto clear threshold to use.
+     * @param threshold the threshold value.*/
+    public RollingAverage(int bufferSize, Bias biasType, Threshold thresholdType, int threshold) {
+        buffer = new ArrayList<Double>();
+        averageBuffer = new ArrayList<Double>();
+        this.bufferSize = bufferSize;
+        this.biasType = biasType;
+        this.autoClearThreshold = threshold;
+        this.thresholdType = thresholdType;
     }
 
     /**@param bufferSize New size of the buffer.*/
     public void setBufferSize(int bufferSize) { this.bufferSize = bufferSize; }
     /**@param biasType New type of bias to use in averages.*/
     public void setBiasType(Bias biasType) { this.biasType = biasType; }
+    /**@param thresholdType The type of auto clear threshold to use.
+     * @param threshold the threshold value.*/
+    public void setThreshold(Threshold thresholdType, int threshold) {
+        this.autoClearThreshold = threshold;
+        this.thresholdType = thresholdType;
+    }
 
     /**Creates a sigmoid bias multiplier between 0.0 and 2.0 so that more recent values are given more weight than older values.
      * @param total The total number of values in the buffer.
@@ -70,6 +108,33 @@ public class RollingAverage {
      * @return 1.0*/
     public static double flatBias(int total, int recency) { return 1.0; }
 
+    /**Determines if recent values have all been the same, suggesting that the buffer should be cleared.
+     * @param buffer The buffer of values.
+     * @param threshold The threshold to be measured against.
+     * @return True if the buffer should be cleared.*/
+    public static boolean noChangeThreshold(Double[] buffer, int threshold) {
+        double save = buffer[buffer.length - 1];
+        for (int i = 2; i < threshold; i++) { if (buffer[buffer.length - i] != save) { return true; } }
+        return false;
+    }
+    /**Determines if recent values have all been the same, suggesting that the buffer should be cleared.
+     * @param buffer The buffer of values.
+     * @param threshold The threshold to be measured against.
+     * @param target The target value to test for.
+     * @return True if the buffer should be cleared.*/
+    public static boolean noChangeThreshold(Double[] buffer, int threshold, double target) {
+        for (int i = 2; i < threshold; i++) { if (buffer[buffer.length - i] != target) { return true; } }
+        return false;
+    }
+    /**Determines if recent averages have all been the same, suggesting that the buffer should be cleared.
+     * @param buffer The buffer of averages.
+     * @return True if the buffer should be cleared.*/
+    public static boolean averageThreshold(Double[] buffer) {
+        double save = buffer[0];
+        for (int i = 1; i < buffer.length; i++) { if (buffer[i] != save) { return false; } }
+        return true;
+    }
+
     /**@param set A set of values.
      * @return The average value of the set.*/
     public double average(double[] set) {
@@ -88,7 +153,19 @@ public class RollingAverage {
      * @return The weighted average value of the buffer.*/
     public double addValue(double value) {
         buffer.add(value);
-        if (buffer.size() > bufferSize) { buffer.remove(0); }
+        while (buffer.size() > bufferSize) { buffer.remove(0); }
+        averageBuffer.add(getAverage());
+        while (averageBuffer.size() > autoClearThreshold) { averageBuffer.remove(0); }
+        if (buffer.size() > autoClearThreshold) {
+            if (switch (thresholdType) {
+                case NO_CHANGE -> noChangeThreshold((Double[]) buffer.toArray(), autoClearThreshold);
+                case NO_CHANGE_ZERO -> noChangeThreshold((Double[]) buffer.toArray(), autoClearThreshold, 0);
+                case NO_CHANGE_AVERAGE -> averageThreshold((Double[]) averageBuffer.toArray());
+                case NONE -> false;
+            } ) {
+                buffer.clear();
+            }
+        }
         return getAverage();
     }
 }
