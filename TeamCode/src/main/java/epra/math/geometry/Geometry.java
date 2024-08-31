@@ -19,6 +19,13 @@ public class Geometry {
      * @param angle2 Second angle.
      * @return The resulting angle from subtracting the second from the first, in a range between 0 and 360 degrees (0 to 2pi).*/
     public static Angle subtract(Angle angle1, Angle angle2) { return new Angle((angle1.getDegree() - angle2.getDegree()) % 360); }
+    /**@param angle Array of angles.
+     * @return The average angle of the array.*/
+    public static Angle average(Angle[] angle) {
+        double degrees = 0.0;
+        for (Angle a : angle) { degrees += a.getDegree(); }
+        return new Angle(degrees % 360.0);
+    }
 
     /**@param point1 First point.
      * @param point2 Second point.
@@ -28,6 +35,17 @@ public class Geometry {
      * @param point2 Second point.
      * @return The resulting point from subtracting the second from the first.*/
     public static Point subtract(Point point1, Point point2) { return new Point(point1.x - point2.x, point1.y - point2.y); }
+    /**@param point Array of points.
+     * @return The average point of the array.*/
+    public static Point average(Point[] point) {
+        double x = 0.0;
+        double y = 0.0;
+        for (Point p : point) {
+            x += p.x;
+            y += p.y;
+        }
+        return new Point(x, y);
+    }
 
     /**@param vector1 First vector.
      * @param vector2 Second vector.
