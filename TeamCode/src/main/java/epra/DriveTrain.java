@@ -255,12 +255,12 @@ public class DriveTrain {
      * @param orientation The yaw, pitch, and roll of the robot in degrees.
      * @return Returns a String with the target degrees and right power.
      */
-    public String gyroMecanumDrive(float powerRightX, float powerLeftX, float powerLeftY, IMUExpanded imu, YawPitchRollAngles[] orientation) {
+    public String gyroMecanumDrive(float powerRightX, float powerLeftX, float powerLeftY, IMUExpanded imu) {
         String re = "";
         targetDegrees += powerRightX * -3;
-        double target = (targetDegrees % 360) - 180;
+        Angle target = new Angle((targetDegrees % 360.0) - 180.0);
         re = targetDegrees.toString();
-        float rPow = (Math.abs(imu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, target)) > 5) ? (float) (imu.trueDistIMU(orientation, IMUExpanded.YAW, AngleUnit.DEGREES, target)) : 0.0f;
+        float rPow = (Math.abs(Geometry.subtract(imu.getYaw(), target).getDegree()) > 5.0) ? (float) (Geometry.subtract(imu.getYaw(), target).getDegree()) : 0.0f;
         re += "," + rPow;
         if (Math.abs(rPow) > 0.0f) {
             rPow /= 60.0f;
