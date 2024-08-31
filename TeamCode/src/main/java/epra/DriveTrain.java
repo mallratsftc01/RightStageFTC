@@ -252,7 +252,6 @@ public class DriveTrain {
      * @param powerLeftX  X position of the left joystick.
      * @param powerLeftY  Y position of the left joystick.
      * @param imu IMU to find angles and use methods.
-     * @param orientation The yaw, pitch, and roll of the robot in degrees.
      * @return Returns a String with the target degrees and right power.
      */
     public String gyroMecanumDrive(float powerRightX, float powerLeftX, float powerLeftY, IMUExpanded imu) {
