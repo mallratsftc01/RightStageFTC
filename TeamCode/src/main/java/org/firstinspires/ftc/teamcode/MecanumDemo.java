@@ -1,15 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.epra.Controller;
-import com.epra.DriveTrain;
+import epra.Controller;
+import epra.DriveTrain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-
-import com.acmerobotics.dashboard.*;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 
 
 @TeleOp
@@ -25,8 +22,6 @@ public class MecanumDemo extends LinearOpMode {
 
     private FtcDashboard dashboard;
 
-    DriveTrain myDrive = new DriveTrain(new String[] {"north_west_motor", "north_east_motor", "south_west_motor", "south_east_motor"}, new DcMotorEx[] {northWestMotor, northEastMotor, southWestMotor, southEastMotor}, new DriveTrain.Orientation[] {DriveTrain.Orientation.LEFT_FRONT, DriveTrain.Orientation.RIGHT_FRONT, DriveTrain.Orientation.LEFT_BACK, DriveTrain.Orientation.RIGHT_BACK}, DriveTrain.DriveType.MECANUM);
-
     @Override
     public void runOpMode() throws InterruptedException {
         northEastMotor = hardwareMap.get(DcMotorEx.class, "northeastMotor");
@@ -38,6 +33,8 @@ public class MecanumDemo extends LinearOpMode {
 
         controller1 = new Controller (gamepad1, 0.05F);
         controller2 = new Controller (gamepad2, 0.05F);
+
+        DriveTrain myDrive = new DriveTrain(new String[] {"north_west_motor", "north_east_motor", "south_west_motor", "south_east_motor"}, new DcMotorEx[] {northWestMotor, northEastMotor, southWestMotor, southEastMotor}, new DriveTrain.Orientation[] {DriveTrain.Orientation.LEFT_FRONT, DriveTrain.Orientation.RIGHT_FRONT, DriveTrain.Orientation.LEFT_BACK, DriveTrain.Orientation.RIGHT_BACK}, DriveTrain.DriveType.MECANUM);
 
         waitForStart();
         while (opModeIsActive()) {
