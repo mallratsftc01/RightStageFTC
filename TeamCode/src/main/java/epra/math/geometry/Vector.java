@@ -23,7 +23,7 @@ public class Vector extends Angle {
      * @param x
      * @param y*/
     public Vector(double x, double y) {
-        super((float) Math.atan(x / y));
+        super((float) ((y < 0.0) ? Math.PI - Math.atan(x / y) : Math.atan(x / y)));
         this.length = Geometry.pythagorean(x, y);
     }
 
@@ -32,7 +32,7 @@ public class Vector extends Angle {
      *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.
      * @param point Point at the end of the vector.*/
     public Vector(Point point) {
-        super((float) Math.atan(point.x / point.y));
+        super((float) ((point.y < 0.0) ? Math.PI - Math.atan(point.x / point.y) : Math.atan(point.x / point.y)));
         this.length = Geometry.pythagorean(point.x, point.y);
     }
 
@@ -43,7 +43,9 @@ public class Vector extends Angle {
 
     /**@param point Point at the end of the vector.*/
     public void setPoint(Point point) {
-        super.setRadian(Math.atan(point.x / point.y));
+        double radian = Math.atan(point.x / point.y);
+        if (point.y < 0.0) { radian = Math.PI - radian; }
+        super.setRadian(radian);
         this.length = Geometry.pythagorean(point.x, point.y);
     }
 

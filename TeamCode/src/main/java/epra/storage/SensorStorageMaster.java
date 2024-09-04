@@ -41,7 +41,7 @@ public class SensorStorageMaster {
         for (int ii = 0; ii < touchSensors.length; ii++) {b[ii] = touchSensors[ii].isPressed();}
         binarySensors = new SensorBooleanStorage(b);
 
-        imuStorage = new IMUStorage(imu.getOrientation());
+        //imuStorage = new IMUStorage(imu.getOrientation());
     }
     /**Updates the values associated with the motors.*/
     public void updateMotors() {
@@ -62,7 +62,7 @@ public class SensorStorageMaster {
     }
     /**Updates the values associated with the IMU.*/
     public void updateIMU() {
-        imuStorage.updateIMUValues(imu.getOrientation());
+        //imuStorage.updateIMUValues(imu.getOrientation());
     }
     /**Updates all values at their frequency.*/
     public void update() {

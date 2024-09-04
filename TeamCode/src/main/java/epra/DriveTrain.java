@@ -248,28 +248,16 @@ public class DriveTrain {
     }
     /**
      * Holonomic drive with mecanum wheels. Left stick moves the robot, right stick X rotates the robot. Uses the IMU to facilitate more accurate turns. Created 11/22/2023.
-     * @param powerRightX X position of the right joystick.
-     * @param powerLeftX  X position of the left joystick.
-     * @param powerLeftY  Y position of the left joystick.
+     * @param powerLeftX X position of the left joystick.
+     * @param powerLeftY Y position of the left joystick.
+     * @param vectorRight A vector representing the right joystick.
      * @param imu IMU to find angles and use methods.
-     * @return Returns a String with the target degrees and right power.
      */
-    public String gyroMecanumDrive(float powerRightX, float powerLeftX, float powerLeftY, IMUExpanded imu) {
-        String re = "";
-        targetDegrees += powerRightX * -3;
-        Angle target = new Angle((targetDegrees % 360.0) - 180.0);
-        re = targetDegrees.toString();
-        float rPow = (Math.abs(Geometry.subtract(imu.getYaw(), target).getDegree()) > 5.0) ? (float) (Geometry.subtract(imu.getYaw(), target).getDegree()) : 0.0f;
-        re += "," + rPow;
-        if (Math.abs(rPow) > 0.0f) {
-            rPow /= 60.0f;
-            rPow = (Math.abs(rPow) > 1.0f) ? Math.signum(rPow) : rPow;
-            rPow = (Math.abs(rPow) <= 0.35f) ? Math.signum(rPow) * 0.35f : rPow;
-        }
-        re += "," + rPow;
-        mecanumDrive(rPow, powerLeftX, powerLeftY);
-        setMotorPowers();
-        return re;
+    public double[] gyroMecanumDrive(float powerLeftX, float powerLeftY, Vector vectorRight, IMUExpanded imu) {
+        Angle current = imu.getYaw();
+        float rightPow = (float) (Geometry.direction(current, vectorRight) * Math.min(Geometry.subtract(current, vectorRight).getRadian(), 1.0f) * vectorRight.getLength());
+        mecanumDrive(rightPow, powerLeftX, powerLeftY);
+        return new double[] {rightPow, Geometry.direction(current, vectorRight), Geometry.subtract(current, vectorRight).getRadian()};
     }
 
     /**Uses a drive based on the DriveTrain's drive type.

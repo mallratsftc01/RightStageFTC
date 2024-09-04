@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import java.util.Arrays;
+
 
 @TeleOp
 public class MecanumDemo extends LinearOpMode {
@@ -62,7 +64,10 @@ public class MecanumDemo extends LinearOpMode {
 
             //drive.setDrivePower(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Key.LEFT_STICK_X), controller1.analogDeadband(Controller.Key.RIGHT_STICK_Y), controller1.analogDeadband(Controller.Key.LEFT_STICK_Y));
 
-            drive.gyroMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Key.LEFT_STICK_X), controller1.analogDeadband(Controller.Key.LEFT_STICK_Y), imuX);
+            telemetry.addData("Current Angle: ", imuX.getYaw().getDegree());
+            telemetry.addData("Target Angle: ", controller1.analogDeadband(Controller.Stick.RIGHT_STICK).getDegree());
+            telemetry.addData("Right Pow, direction, distance: ", Arrays.toString(drive.gyroMecanumDrive(controller1.analogDeadband(Controller.Key.LEFT_STICK_X), controller1.analogDeadband(Controller.Key.LEFT_STICK_Y), controller1.analogDeadband(Controller.Stick.RIGHT_STICK), imuX)));
+            telemetry.update();
         }
     }
 }
