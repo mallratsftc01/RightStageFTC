@@ -12,6 +12,10 @@ import epra.math.geometry.Geometry;
 
 public class IMUExpanded {
 
+    private Angle baseYaw = new Angle(0);
+    private Angle basePitch = new Angle(0);
+    private Angle baseRoll = new Angle(0);
+
     public enum AXIS {
         YAW,
         PITCH,
@@ -64,7 +68,7 @@ public class IMUExpanded {
         for (int i = 0; i < imus.size(); i++) {
             angle[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         }
-        return Geometry.average(angle);
+        return Geometry.subtract(Geometry.average(angle), baseYaw);
     }
 
     /**
@@ -75,7 +79,7 @@ public class IMUExpanded {
         for (int i = 0; i < imus.size(); i++) {
             angle[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES));
         }
-        return Geometry.average(angle);
+        return Geometry.subtract(Geometry.average(angle), basePitch);
     }
 
     /**
@@ -86,7 +90,7 @@ public class IMUExpanded {
         for (int i = 0; i < imus.size(); i++) {
             angle[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES));
         }
-        return Geometry.average(angle);
+        return Geometry.subtract(Geometry.average(angle), baseRoll);
     }
     /**@param axis Axis of angle.
      * @return The average angle of that axis.*/
@@ -96,5 +100,20 @@ public class IMUExpanded {
             case PITCH -> getPitch();
             case ROLL -> getRoll();
         };
+    }
+
+    /**Sets all the angles to 0 at the current orientation.*/
+    public void recenter() {
+        Angle[] yaw = new Angle[imus.size()];
+        Angle[] pitch = new Angle[imus.size()];
+        Angle[] roll = new Angle[imus.size()];
+        for (int i = 0; i < imus.size(); i++) {
+            yaw[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+            pitch[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES));
+            roll[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES));
+        }
+        baseYaw = Geometry.average(yaw);
+        basePitch = Geometry.average(pitch);
+        baseRoll = Geometry.average(roll);
     }
 }
